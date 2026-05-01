@@ -466,12 +466,12 @@ async function fetchAirQuality(stationName) {
     if (!res.ok) throw new Error('Network Error');
     const json = await res.json(); const item = json?.response?.body?.items?.[0];
     if (!item) throw new Error('측정소 데이터 없음');
-    setApiTag('apiAir', 'ok', `✓ 에어코리아 (${item.stationName})`);
+    setApiTag('apiAir', 'ok', `✓ 에어코리아 (${stationName})`); // FIXED: 요청한 stationName 출력
     return {
       pm10: Math.round(parseFloat(item.pm10Value)) || null,
       pm25: Math.round(parseFloat(item.pm25Value)) || null,
       o3: parseFloat(item.o3Value) || 0,
-      dataTime: item.dataTime, stationName: item.stationName,
+      dataTime: item.dataTime, stationName: stationName, // FIXED: 요청한 stationName 사용
     };
   } catch (e) {
     setApiTag('apiAir', 'err', `⚠ 글로벌 대기질 자동 전환`);

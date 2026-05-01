@@ -112,8 +112,7 @@
  * CONFIG: API 키 설정
  * ──────────────────────────────────────────────────────────────────────────
  */
-// ⬇️ 사주 앱에서 쓰셨던 브이월드 키를 여기에 붙여넣어 주세요!
-const VWORLD_API_KEY = "여기에_사주앱에서_쓰신_브이월드_키를_넣어주세요"; 
+const VWORLD_API_KEY = "5B0D3660-9AA8-3DEC-BDB4-BE8463D07762"; 
 const OWM_API_KEY = "68be8e3e30b8d79dca72993923055020";
 
 let currentLat = 36.4800; // 세종특별자치시 기본 위도
@@ -124,7 +123,7 @@ document.getElementById('stationInput').addEventListener('keypress', function (e
     if (e.key === 'Enter') startAnalysis();
 });
 
-// GPS 위치 -> 브이월드 주소 변환 -> 대기질 분석
+// GPS 위치 -> 1순위: 브이월드 -> 2순위(백업): OWM 지명 변환
 async function getGPSLocation() {
     if (!navigator.geolocation) return alert("GPS를 지원하지 않습니다.");
     
@@ -136,22 +135,37 @@ async function getGPSLocation() {
         currentLon = pos.coords.longitude;
         
         try {
-            // [브이월드 API] 좌표를 행정구역 명칭으로 변환
+            // 1순위: [브이월드 API] 좌표를 행정구역 명칭으로 변환
             const vworldUrl = `https://api.vworld.kr/req/address?service=address&request=getAddress&version=2.0&crs=epsg:4326&point=${currentLon},${currentLat}&format=json&type=both&zipcode=false&simple=false&key=${VWORLD_API_KEY}`;
             const res = await fetch(vworldUrl);
             const data = await res.json();
             
-            let addr = "세종특별자치시"; // 기본값
+            let addr = "현재 위치";
             if(data.response?.status === "OK") {
                 const result = data.response.result[0].structure;
-                // '도담동' 혹은 '세종특별자치시' 등 가장 적합한 이름 추출
                 addr = result.level4L || result.level2 || "현재 위치";
+            } else {
+                throw new Error("브이월드 도메인 미등록 또는 응답 오류");
             }
             document.getElementById('stationInput').value = addr;
             startAnalysis();
+            
         } catch (e) {
-            console.error("브이월드 호출 실패", e);
-            document.getElementById('stationInput').value = "현재 위치";
+            // 2순위: 브이월드 실패 시 [OWM 글로벌 API] 백업 실행
+            console.warn("브이월드 호출 실패. OWM으로 지명을 찾습니다.", e);
+            try {
+                const geoUrl = `https://api.openweathermap.org/geo/1.0/reverse?lat=${currentLat}&lon=${currentLon}&limit=1&appid=${OWM_API_KEY}`;
+                const geoRes = await fetch(geoUrl);
+                const geoData = await geoRes.json();
+                
+                let locationName = "현재 위치";
+                if (geoData && geoData.length > 0) {
+                    locationName = geoData[0].local_names?.ko || geoData[0].name;
+                }
+                document.getElementById('stationInput').value = locationName;
+            } catch (geoErr) {
+                document.getElementById('stationInput').value = "현재 위치";
+            }
             startAnalysis();
         }
     }, () => {
@@ -160,9 +174,9 @@ async function getGPSLocation() {
     });
 }
 
+// 대기질 가져오기 (1순위: 에어코리아 백엔드 -> 2순위: OWM)
 async function fetchAirQuality(station) {
     try {
-        // [Main] Vercel Backend -> AirKorea 호출
         const res = await fetch(`/api/air?station=${encodeURIComponent(station)}`);
         const data = await res.json();
         if (data.response?.header?.resultCode !== "00") throw new Error("API Syncing...");
@@ -177,14 +191,13 @@ async function fetchAirQuality(station) {
             time: item.dataTime
         };
     } catch (err) {
-        // [Fallback] OpenWeatherMap 호출
         console.warn("에어코리아 지연, 글로벌 데이터로 전환합니다.");
         const res = await fetch(`https://api.openweathermap.org/data/2.5/air_pollution?lat=${currentLat}&lon=${currentLon}&appid=${OWM_API_KEY}`);
         const data = await res.json();
         const comp = data.list[0].components;
         return {
             source: "글로벌 대기질 예측 모델",
-            stationName: station + " (예측)",
+            stationName: station === "현재 위치" ? "현재 위치" : station + " (예측)",
             pm25: comp.pm2_5,
             pm10: comp.pm10,
             o3: comp.o3 || "-",
@@ -193,6 +206,7 @@ async function fetchAirQuality(station) {
     }
 }
 
+// 날씨 가져오기 (OWM API 사용)
 async function fetchWeather() {
     try {
         const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${currentLat}&lon=${currentLon}&appid=${OWM_API_KEY}&units=metric`);
@@ -238,7 +252,6 @@ function renderDashboard(air, weather) {
     document.getElementById('orb1').style.background = color;
     document.getElementById('pm25Val').style.color = color;
 
-    // AI 코칭 타이핑 효과
     const aiMsgEl = document.getElementById('aiMsg');
     const advice = air.pm25 > 35 ? "외출 시 마스크 착용이 필수적입니다." : "산책하기에 아주 쾌적한 공기 상태입니다.";
     const text = `현재 ${air.stationName}의 기온은 ${weather.temp}°C이며, 초미세먼지 농도는 ${air.pm25}㎍/㎥로 확인됩니다. ${advice}`;

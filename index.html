@@ -49,7 +49,7 @@
   /* Search */
   .search-wrapper { max-width: 540px; margin: 0 auto; display: flex; align-items: center; background: rgba(24, 24, 27, 0.8); border: 1px solid var(--border-light); border-radius: 100px; padding: 6px; box-shadow: 0 8px 32px rgba(0,0,0,0.3); }
   .search-wrapper:focus-within { border-color: var(--accent); box-shadow: 0 0 0 4px var(--accent-glow); }
-  .btn-geo { background: rgba(255,255,255,0.05); border: none; color: var(--text-main); border-radius: 100px; padding: 12px 18px; cursor: pointer; margin-left: 4px; }
+  .btn-geo { background: rgba(255,255,255,0.05); border: none; color: var(--text-main); border-radius: 100px; padding: 12px 18px; cursor: pointer; margin-left: 4px; font-size: 1.1rem; }
   .location-input { flex: 1; background: transparent; border: none; padding: 14px 16px; color: var(--text-main); font-size: 1rem; outline: none; text-align: center; }
   .btn-primary { background: linear-gradient(135deg, var(--accent), #2563eb); color: #fff; border: none; border-radius: 100px; padding: 14px 28px; font-weight: 600; cursor: pointer; }
 
@@ -126,7 +126,7 @@
   #loading { display: none; position: fixed; inset: 0; background: rgba(9,9,11,0.95); backdrop-filter: blur(20px); z-index: 1000; flex-direction: column; align-items: center; justify-content: center; }
   .loader { width: 44px; height: 44px; border: 3px solid var(--border-light); border-radius: 50%; border-bottom-color: var(--accent); animation: rotation 1s linear infinite; }
   @keyframes rotation { to { transform: rotate(360deg); } }
-  .toast { position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%) translateY(100px); background: rgba(24, 24, 27, 0.9); border: 1px solid var(--border-light); border-radius: 100px; padding: 14px 28px; color: #fff; z-index: 2000; transition: transform 0.4s, opacity 0.4s; opacity: 0; }
+  .toast { position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%) translateY(100px); background: rgba(24, 24, 27, 0.9); border: 1px solid var(--border-light); border-radius: 100px; padding: 12px 24px; color: #fff; z-index: 2000; transition: transform 0.4s, opacity 0.4s; opacity: 0; }
   .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
 
   footer { text-align: center; padding: 40px 20px; color: var(--text-muted); font-size: 0.8rem; opacity: 0.7; }
@@ -163,8 +163,8 @@
     <p>당신의 건강 조건에 맞춘 실시간 정밀 코칭을 시작합니다.</p>
     
     <div class="search-wrapper">
-      <div>
-        <button class="btn-geo" onclick="initAutoScan()" title="내 위치 다시 찾기">📍</button>
+      <div style="flex: 1; display: flex; width: 100%;">
+        <button class="btn-geo" onclick="requestGPSWithPrompt()" title="내 위치 다시 찾기">📍</button>
         <input class="location-input" id="locationInput" type="text" placeholder="지역명을 검색하거나 위치 아이콘을 누르세요">
       </div>
       <button class="btn-primary" onclick="manualScan()">스캔 시작</button>
@@ -187,6 +187,7 @@
       <div id="stealthTipBox" class="stealth-tip">
         <span class="tip-label">💡 오늘의 건강 관리 팁</span>
         <span id="tipText" class="tip-text"></span>
+        <br>
         <a id="tipLink" href="#" target="_blank" class="tip-link">제품 자세히 보기 ➔</a>
         <span class="disclosure">✱ 이 포스팅은 토스쇼핑 쉐어링크 활동의 일환으로, 이에 따른 일정액의 수수료를 제공받습니다.</span>
       </div>
@@ -253,8 +254,8 @@ const SHARE_LINKS = {
   warmer: { text: "야외 운동 시 호흡이 편안하면서도 자외선과 먼지를 막아주는 스포츠 전용 넥워머를 활용해 보세요.", url: "https://toss.im/_m/vBYMH07c" }
 };
 
-let currentLat = 37.5665; let currentLon = 126.9780; // 기본 서울
-let lastLocation = '서울시 중구';
+let currentLat = 36.4800; let currentLon = 127.2890; // 기본 세종시
+let lastLocation = '세종시';
 let selectedConditions = []; 
 
 function toggleChip(el) {
@@ -268,31 +269,64 @@ function showToast(msg) {
 }
 
 // ─────────────────────────────────────
-// 2. 자동 실행 로직 (접속 즉시)
+// 2. 권한 팝업 및 자동 실행 로직
 // ─────────────────────────────────────
 window.addEventListener('DOMContentLoaded', () => {
-    initAutoScan();
+    if (navigator.permissions) {
+        navigator.permissions.query({ name: 'geolocation' }).then(function(result) {
+            if (result.state === 'granted') {
+                initAutoScan(false); // 팝업 없이 바로 진행
+            } else if (result.state === 'prompt') {
+                initAutoScan(true);  // 권한 묻기 진행
+            } else {
+                // 이미 거절된 상태: 확실하게 팝업으로 안내
+                alert("⚠️ 위치 권한이 차단되어 있습니다.\n\n정확한 내 동네 날씨와 미세먼지를 분석하려면\n주소창 옆의 [자물쇠 🔒] 아이콘을 눌러\n위치 권한을 '허용'으로 변경 후 새로고침 해주세요!\n\n(현재는 기본 위치인 세종시로 안내해 드립니다.)");
+                initAutoScan(false); // 세종시로 진행
+            }
+        });
+    } else {
+        initAutoScan(true);
+    }
 });
 
-async function initAutoScan() {
+// 사용자가 내 위치 버튼(📍)을 눌렀을 때도 동일하게 검사
+function requestGPSWithPrompt() {
+    if (navigator.permissions) {
+        navigator.permissions.query({ name: 'geolocation' }).then(function(result) {
+            if (result.state === 'denied') {
+                alert("⚠️ 위치 권한이 차단되어 있습니다.\n\n정확한 내 동네 날씨와 미세먼지를 분석하려면\n주소창 옆의 [자물쇠 🔒] 아이콘을 눌러\n위치 권한을 '허용'으로 변경해 주세요.");
+            } else {
+                initAutoScan(true);
+            }
+        });
+    } else {
+        initAutoScan(true);
+    }
+}
+
+async function initAutoScan(requestPermission = true) {
     const loading = document.getElementById('loading');
     const loadingText = document.getElementById('loadingText');
     loading.style.display = 'flex';
     loadingText.textContent = "현재 위치를 파악하고 있습니다...";
 
-    if (navigator.geolocation) {
+    if (requestPermission && navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
             async (pos) => { 
                 currentLat = pos.coords.latitude; currentLon = pos.coords.longitude; 
                 await fetchLocationNameAndProcess(); 
             },
-            async () => { 
-                showToast("위치 권한이 거부되어 서울시(기본값)로 스캔합니다.");
+            async (err) => { 
+                if(err.code === 1) { // 사용자가 방금 거절을 누른 경우
+                    alert("⚠️ 위치 권한이 방금 거부되었습니다.\n\n정확한 내 동네 날씨와 미세먼지를 분석하려면\n주소창 옆의 [자물쇠 🔒] 아이콘을 눌러\n위치 권한을 '허용'으로 변경해 주세요.");
+                }
                 await fetchLocationNameAndProcess(); 
             }, 
             { timeout: 5000 }
         );
-    } else await fetchLocationNameAndProcess();
+    } else {
+        await fetchLocationNameAndProcess();
+    }
 }
 
 async function manualScan() {
@@ -323,8 +357,8 @@ async function fetchLocationNameAndProcess() {
     } catch (e) {
         try {
             const bdc = await safeFetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${currentLat}&longitude=${currentLon}&localityLanguage=ko`, 3000);
-            lastLocation = bdc.locality || bdc.city || "서울시 중구";
-        } catch(e) { lastLocation = "서울시 중구"; }
+            lastLocation = bdc.locality || bdc.city || "세종시";
+        } catch(e) { lastLocation = "세종시"; }
     }
     document.getElementById('locationInput').value = lastLocation;
     await processDataOnly(lastLocation);
@@ -338,7 +372,6 @@ async function processDataOnly(stationName) {
     let weather = { temp: 0, humidity: 0, windSpeed: 0, ptyCode: 0, skyCode: 1, rainProb: 0, hourly: [] };
 
     try {
-        // 공공데이터 대신 OWM 직접 호출 (속도 및 무한로딩 방지)
         const aData = await safeFetch(`https://api.openweathermap.org/data/2.5/air_pollution?lat=${currentLat}&lon=${currentLon}&appid=${OWM_API_KEY}`);
         const c = aData.list[0].components;
         air.pm10 = Math.round(c.pm10); air.pm25 = Math.round(c.pm2_5); air.o3 = (c.o3 / 1000).toFixed(3);

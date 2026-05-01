@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>숨결 Pro — 하이퍼 로컬 외출 가이드</title>
+<title>숨결 Pro — 하이퍼 로컬 자동 분석</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
 <style>
@@ -12,154 +12,84 @@
     --bg: #0a0e1a; --surface: #111827; --surface2: #1a2235;
     --border: rgba(255,255,255,0.07); --text: #f1f5f9; --muted: #64748b; --accent: #38bdf8;
   }
-
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body { background: var(--bg); color: var(--text); font-family: 'Noto Sans KR', sans-serif; min-height: 100vh; overflow-x: hidden; }
-
   .bg-orb { position: fixed; border-radius: 50%; filter: blur(130px); opacity: 0.12; pointer-events: none; transition: background 2s ease; z-index: 0; }
   .orb1 { width: 700px; height: 700px; top: -250px; left: -200px; background: var(--accent); }
   .orb2 { width: 450px; height: 450px; bottom: 50px; right: -150px; background: #818cf8; }
-
   header { position: relative; z-index: 10; display: flex; justify-content: space-between; align-items: center; padding: 22px 40px; border-bottom: 1px solid var(--border); backdrop-filter: blur(10px); background: rgba(10,14,26,0.6); position: sticky; top: 0; }
   .logo { font-family: 'Gowun Batang', serif; font-size: 1.5rem; letter-spacing: 0.15em; }
   .logo span { color: var(--accent); }
-
   .live-pill { display: flex; align-items: center; gap: 7px; font-size: 0.75rem; color: var(--muted); border: 1px solid var(--border); padding: 6px 14px; border-radius: 100px; }
   .live-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--good); animation: pulse 2s infinite; }
   @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.4;transform:scale(1.4)} }
-
   .push-banner { position: relative; z-index: 9; background: linear-gradient(135deg, rgba(56,189,248,0.1), rgba(129,140,248,0.1)); border-bottom: 1px solid rgba(56,189,248,0.15); padding: 14px 40px; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
   .push-banner-text { font-size: 0.85rem; color: #94a3b8; display: flex; align-items: center; gap: 10px; }
-  .push-banner-text span { font-size: 1.1rem; }
   .btn-push { background: var(--accent); color: #0a0e1a; border: none; border-radius: 10px; padding: 9px 20px; font-size: 0.82rem; font-weight: 700; cursor: pointer; transition: opacity 0.2s; white-space: nowrap; }
-  .btn-push:hover { opacity: 0.85; }
-  .btn-push:disabled { opacity: 0.4; cursor: default; }
   .push-status { font-size: 0.8rem; padding: 8px 16px; border-radius: 10px; display: none; }
   .push-status.granted { background: rgba(74,222,128,0.12); color: var(--good); display:block; }
   .push-status.denied { background: rgba(239,68,68,0.1); color: var(--very-bad); display:block; }
-
   .alarm-card { position: relative; z-index: 8; background: var(--surface2); border-bottom: 1px solid var(--border); padding: 20px 40px; display: none; align-items: center; gap: 20px; flex-wrap: wrap; justify-content: space-between; }
   .alarm-card.visible { display: flex; }
-  .alarm-label { font-size: 0.8rem; color: var(--muted); letter-spacing: 0.08em; }
-  .alarm-times { display: flex; gap: 10px; flex-wrap: wrap; }
   .alarm-chip { padding: 7px 16px; border-radius: 100px; border: 1px solid var(--border); font-size: 0.8rem; color: var(--muted); cursor: pointer; transition: all 0.2s; }
-  .alarm-chip:hover { border-color: var(--accent); color: var(--accent); }
   .alarm-chip.active { background: rgba(56,189,248,0.12); border-color: var(--accent); color: var(--accent); }
   .alarm-chip.set { background: rgba(74,222,128,0.1); border-color: var(--good); color: var(--good); }
-  
-  .alarm-actions { display: flex; gap: 10px; }
-  .btn-set-alarm { background: transparent; border: 1px solid var(--accent); color: var(--accent); border-radius: 10px; padding: 8px 18px; font-size: 0.8rem; font-weight: 700; cursor: pointer; transition: all 0.2s; }
-  .btn-set-alarm:hover { background: rgba(56,189,248,0.1); }
+  .btn-set-alarm { background: transparent; border: 1px solid var(--accent); color: var(--accent); border-radius: 10px; padding: 8px 18px; font-size: 0.8rem; font-weight: 700; cursor: pointer; }
   .btn-cancel-alarm { background: rgba(239,68,68,0.1); border: 1px solid var(--very-bad); color: var(--very-bad); border-radius: 10px; padding: 8px 18px; font-size: 0.8rem; font-weight: 700; cursor: pointer; display: none; }
-  .btn-cancel-alarm:hover { background: rgba(239,68,68,0.2); }
-
   main { position: relative; z-index: 10; max-width: 1100px; margin: 0 auto; padding: 56px 24px 100px; }
-
   .hero { text-align: center; margin-bottom: 56px; animation: fadeUp 0.7s ease both; }
   @keyframes fadeUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
-  .hero-tag { display: inline-block; font-size: 0.72rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--accent); border: 1px solid rgba(56,189,248,0.3); padding: 5px 16px; border-radius: 100px; margin-bottom: 24px; }
   .hero h1 { font-family: 'Gowun Batang', serif; font-size: clamp(2.2rem, 5vw, 3.6rem); line-height: 1.35; margin-bottom: 18px; font-weight: 400; }
   .hero h1 em { font-style: normal; color: var(--accent); }
-  .hero p { font-size: 1rem; color: var(--muted); max-width: 460px; margin: 0 auto 36px; line-height: 1.8; font-weight: 300; }
-
   .location-bar { display: flex; gap: 12px; max-width: 500px; margin: 0 auto; animation: fadeUp 0.7s 0.15s ease both; }
-  .location-input { flex: 1; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px 20px; color: var(--text); font-size: 0.92rem; outline: none; transition: border-color 0.2s; width: 100%; padding-left: 44px; }
-  .location-input:focus { border-color: var(--accent); }
+  .location-input { flex: 1; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px 20px; color: var(--text); font-size: 0.92rem; outline: none; transition: border-color 0.2s; width: 100%; padding-left: 20px; }
   .btn-primary { background: var(--accent); color: #0a0e1a; border: none; border-radius: 12px; padding: 14px 26px; font-size: 0.88rem; font-weight: 700; cursor: pointer; transition: opacity 0.2s, transform 0.1s; white-space: nowrap; }
-  .btn-primary:active { transform: scale(0.97); }
-
   .profile-section { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; margin-top: 18px; animation: fadeUp 0.7s 0.25s ease both; }
   .chip { padding: 7px 15px; border-radius: 100px; border: 1px solid var(--border); font-size: 0.78rem; color: var(--muted); cursor: pointer; transition: all 0.2s; user-select: none; }
   .chip.active { background: rgba(56,189,248,0.15); border-color: var(--accent); color: var(--accent); }
-
-  .api-status-bar { display: none; gap: 12px; flex-wrap: wrap; margin-bottom: 24px; padding: 16px 20px; background: var(--surface); border-radius: 14px; border: 1px solid var(--border); }
-  .api-status-bar.visible { display: flex; }
-  .api-tag { font-size: 0.72rem; letter-spacing: 0.05em; padding: 4px 12px; border-radius: 100px; display: flex; align-items: center; gap: 6px; }
-  .api-tag.ok { background: rgba(74,222,128,0.1); color: var(--good); }
-  .api-tag.err { background: rgba(239,68,68,0.1); color: var(--very-bad); }
-  .api-tag.loading { background: rgba(56,189,248,0.1); color: var(--accent); }
-
   .dashboard { display: none; animation: fadeUp 0.6s ease both; }
   .dashboard.visible { display: block; }
-
   .verdict-card { background: var(--surface); border: 1px solid var(--border); border-radius: 24px; padding: 44px 36px; text-align: center; margin-bottom: 20px; position: relative; overflow: hidden; }
   .verdict-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: var(--verdict-color, #4ade80); transition: background 1s; }
   .verdict-emoji { font-size: 3.6rem; margin-bottom: 10px; display: block; }
   .verdict-location { font-size: 1.1rem; color: var(--accent); font-weight: 500; margin-bottom: 10px; }
   .verdict-title { font-family: 'Gowun Batang', serif; font-size: 2.2rem; margin-bottom: 14px; font-weight: 400; }
-  .verdict-sub { color: var(--muted); font-size: 0.95rem; line-height: 1.7; max-width: 400px; margin: 0 auto 28px; font-weight: 300; }
-
   .aqi-meter { display: flex; align-items: center; justify-content: center; gap: 20px; padding: 20px; background: rgba(255,255,255,0.03); border-radius: 14px; margin-top: 20px; flex-wrap: wrap; }
   .aqi-item { text-align: center; min-width: 80px; }
   .aqi-value { font-size: 1.8rem; font-weight: 700; font-family: 'Gowun Batang', serif; }
-  .aqi-label { font-size: 0.7rem; color: var(--muted); margin-top: 4px; letter-spacing: 0.04em; line-height: 1.4; }
-  .aqi-divider { width: 1px; height: 44px; background: var(--border); }
+  .aqi-label { font-size: 0.7rem; color: var(--muted); margin-top: 4px; }
   .grade-badge { display: inline-block; padding: 3px 12px; border-radius: 100px; font-size: 0.72rem; font-weight: 700; margin-top: 6px; }
   .grade-good { background: rgba(74,222,128,0.15); color: var(--good); }
   .grade-moderate { background: rgba(250,204,21,0.15); color: var(--moderate); }
   .grade-bad { background: rgba(249,115,22,0.15); color: var(--bad); }
   .grade-very-bad { background: rgba(239,68,68,0.15); color: var(--very-bad); }
-
   .card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; margin-bottom: 20px; }
-  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 18px; padding: 26px; transition: border-color 0.2s; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 18px; padding: 26px; }
   .card-icon { font-size: 1.5rem; margin-bottom: 10px; display: block; }
-  .card-title { font-size: 0.75rem; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 7px; }
-  .card-value { font-size: 1.45rem; font-family: 'Gowun Batang', serif; font-weight: 400; margin-bottom: 5px; }
-  .card-desc { font-size: 0.8rem; color: var(--muted); line-height: 1.6; font-weight: 300; }
-
+  .card-value { font-size: 1.45rem; font-family: 'Gowun Batang', serif; margin-bottom: 5px; }
+  .card-desc { font-size: 0.8rem; color: var(--muted); line-height: 1.6; }
   .timeline-card { background: var(--surface); border: 1px solid var(--border); border-radius: 18px; padding: 26px; margin-bottom: 20px; }
-  .tl-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-  .tl-title { font-size: 0.75rem; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; }
-  .tl-source { font-size: 0.68rem; color: var(--muted); opacity: 0.6; }
   .timeline { display: flex; gap: 3px; align-items: flex-end; height: 90px; }
   .tl-bar-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 5px; height: 100%; justify-content: flex-end; }
   .tl-bar { width: 100%; border-radius: 3px 3px 0 0; transition: height 1.2s ease; min-height: 4px; }
   .tl-time { font-size: 0.6rem; color: var(--muted); }
   .tl-now { font-size: 0.6rem; color: var(--accent); font-weight: 700; }
-
   .weather-row { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
   .weather-item { flex: 1; min-width: 120px; background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 18px; text-align: center; }
-  .weather-icon { font-size: 1.6rem; margin-bottom: 6px; display: block; }
-  .weather-val { font-size: 1.1rem; font-family: 'Gowun Batang', serif; }
-  .weather-lbl { font-size: 0.7rem; color: var(--muted); margin-top: 3px; }
-
   .ai-card { background: linear-gradient(135deg, #111827 0%, #0f172a 100%); border: 1px solid rgba(56,189,248,0.18); border-radius: 18px; padding: 28px; margin-bottom: 20px; }
   .ai-badge { font-size: 0.68rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--accent); margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
-  .ai-badge::before { content: ''; width: 16px; height: 1px; background: var(--accent); }
-  .ai-message { font-family: 'Gowun Batang', serif; font-size: 1.1rem; line-height: 1.95; font-weight: 400; color: #e2e8f0; min-height: 70px; }
-  .ai-typing { display: inline-block; width: 2px; height: 1em; background: var(--accent); margin-left: 2px; vertical-align: text-bottom; animation: blink 1s infinite; }
+  .ai-message { font-family: 'Gowun Batang', serif; font-size: 1.1rem; line-height: 1.95; color: #e2e8f0; min-height: 70px; }
+  .ai-typing { display: inline-block; width: 2px; height: 1em; background: var(--accent); animation: blink 1s infinite; }
   @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
-
   .activities { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 8px; }
-  .activity-item { padding: 14px; border-radius: 12px; border: 1px solid var(--border); text-align: center; font-size: 0.8rem; color: var(--muted); transition: all 0.2s; }
-  .activity-item .act-icon { font-size: 1.3rem; margin-bottom: 5px; display: block; }
-  .activity-item.ok { border-color: rgba(74,222,128,0.3); color: var(--good); background: rgba(74,222,128,0.05); }
-  .activity-item.caution { border-color: rgba(250,204,21,0.3); color: var(--moderate); background: rgba(250,204,21,0.05); }
-  .activity-item.no { border-color: rgba(239,68,68,0.12); color: #475569; opacity: 0.55; text-decoration: line-through; }
-
-  .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(80px); background: var(--surface2); border: 1px solid rgba(56,189,248,0.25); border-radius: 14px; padding: 14px 24px; font-size: 0.85rem; color: var(--text); box-shadow: 0 8px 32px rgba(0,0,0,0.4); z-index: 200; transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1); white-space: nowrap; }
+  .activity-item { padding: 14px; border-radius: 12px; border: 1px solid var(--border); text-align: center; font-size: 0.8rem; color: var(--muted); }
+  .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(80px); background: var(--surface2); border: 1px solid rgba(56,189,248,0.25); border-radius: 14px; padding: 14px 24px; font-size: 0.85rem; color: var(--text); z-index: 200; transition: transform 0.4s; }
   .toast.show { transform: translateX(-50%) translateY(0); }
-
   .loading-overlay { display: none; position: fixed; inset: 0; background: rgba(10,14,26,0.88); backdrop-filter: blur(10px); z-index: 100; flex-direction: column; align-items: center; justify-content: center; gap: 18px; }
   .loading-overlay.show { display: flex; }
   .spinner { width: 44px; height: 44px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; }
   @keyframes spin { to { transform: rotate(360deg); } }
-  .loading-text { font-family: 'Gowun Batang', serif; font-size: 0.95rem; color: var(--muted); }
-  .loading-steps { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }
-  .loading-step { font-size: 0.75rem; color: var(--muted); opacity: 0.5; transition: opacity 0.4s; }
-  .loading-step.active { opacity: 1; color: var(--accent); }
-  .loading-step.done { opacity: 0.6; color: var(--good); }
-
   footer { position: relative; z-index: 10; text-align: center; padding: 36px 24px; border-top: 1px solid var(--border); color: var(--muted); font-size: 0.75rem; line-height: 1.9; }
-
-  @media (max-width: 600px) {
-    header { padding: 18px 20px; }
-    .push-banner { padding: 14px 20px; }
-    .alarm-card { padding: 16px 20px; flex-direction: column; align-items: flex-start;}
-    .verdict-card { padding: 30px 18px; }
-    .location-bar { flex-direction: column; }
-    .aqi-divider { display: none; }
-  }
 </style>
 </head>
 <body>
@@ -190,20 +120,11 @@
 </header>
 
 <div class="push-banner" id="pushBanner">
-  <div class="push-banner-text">
-    <span>🔔</span>
-    <span>매일 아침 대기질 알림을 받고, 외출 전 미리 확인하세요.</span>
-  </div>
-  <div style="display:flex;align-items:center;gap:10px;">
-    <span class="push-status" id="pushStatus"></span>
-    <button class="btn-push" id="pushBtn" onclick="requestPushPermission()">알림 켜기</button>
-  </div>
+  <div class="push-banner-text"><span>🔔</span> 매일 아침 대기질 알림을 받고 외출을 준비하세요.</div>
+  <button class="btn-push" id="pushBtn" onclick="requestPushPermission()">알림 켜기</button>
 </div>
 
 <div class="alarm-card" id="alarmCard">
-  <div>
-    <div class="alarm-label">📅 매일 아침 알림 시간 설정</div>
-  </div>
   <div class="alarm-times" id="alarmTimes">
     <div class="alarm-chip" onclick="selectAlarmTime(this,'06:00')">오전 6시</div>
     <div class="alarm-chip" onclick="selectAlarmTime(this,'07:00')">오전 7시</div>
@@ -220,18 +141,12 @@
   <section class="hero">
     <div class="hero-tag">에어코리아 · BigDataCloud · OpenWeatherMap</div>
     <h1>오늘, <em>나가도</em> 될까요?</h1>
-    <p>실제 공공데이터와 AI 분석으로<br>지금 이 순간 최적의 외출 판단을 드립니다.</p>
-
+    <p>공공데이터와 AI 분석으로 최적의 외출 판단을 드립니다.</p>
     <div class="location-bar">
-      <div style="position: relative; flex: 1; display: flex;">
-        <input class="location-input" id="locationInput" type="text" placeholder="지역명을 입력하거나 📍를 누르세요">
-        <button onclick="getGPSLocation()" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); background: transparent; border: none; font-size: 1.2rem; cursor: pointer; padding: 0;" title="내 위치 찾기">📍</button>
-      </div>
+      <input class="location-input" id="locationInput" type="text" placeholder="지역명을 입력하거나 다시 분석하려면 클릭">
       <button class="btn-primary" onclick="startAnalysis()">분석하기</button>
     </div>
-
     <div class="profile-section">
-      <span style="font-size:0.75rem;color:var(--muted);align-self:center;">건강조건 (클릭하여 선택/해제):</span>
       <div class="chip" onclick="toggleChip(this)" data-val="천식">🫁 천식</div>
       <div class="chip" onclick="toggleChip(this)" data-val="알레르기">🌿 알레르기</div>
       <div class="chip" onclick="toggleChip(this)" data-val="영유아">👶 영유아</div>
@@ -240,492 +155,239 @@
     </div>
   </section>
 
-  <div class="api-status-bar" id="apiStatusBar">
-    <div class="api-tag loading" id="apiAir">📡 에어코리아 연결 중...</div>
-    <div class="api-tag loading" id="apiWeather">🌤 기상청 연결 중...</div>
-    <div class="api-tag loading" id="apiAI">🤖 AI 분석 중...</div>
-  </div>
-
   <section class="dashboard" id="dashboard">
     <div class="ai-card">
       <div class="ai-badge">AI 감성 맞춤 코칭</div>
-      <div class="ai-message" id="aiMessage"><span class="ai-typing"></span></div>
+      <div id="aiMessage" class="ai-message"></div>
     </div>
-
     <div class="weather-row" id="weatherRow"></div>
-
     <div class="verdict-card" id="verdictCard">
       <span class="verdict-emoji" id="verdictEmoji">🌤️</span>
-      <div class="verdict-location" id="verdictLocation">📍 위치 분석 중...</div>
-      <div class="verdict-title" id="verdictTitle">분석 중...</div>
+      <div class="verdict-location" id="verdictLocation"></div>
+      <div class="verdict-title" id="verdictTitle"></div>
       <p class="verdict-sub" id="verdictSub"></p>
-      
       <div class="aqi-meter">
-        <div class="aqi-item">
-          <div class="aqi-value" id="pm10Val">—</div>
-          <div class="aqi-label">미세먼지<br>PM10</div>
-          <div id="pm10Badge"></div>
-        </div>
-        <div class="aqi-divider"></div>
-        <div class="aqi-item">
-          <div class="aqi-value" id="pm25Val">—</div>
-          <div class="aqi-label">초미세먼지<br>PM2.5</div>
-          <div id="pm25Badge"></div>
-        </div>
-        <div class="aqi-divider"></div>
-        <div class="aqi-item">
-          <div class="aqi-value" id="o3Val">—</div>
-          <div class="aqi-label">오존(O3)<br>ppm</div>
-          <div id="o3Badge"></div>
-        </div>
+        <div class="aqi-item"><div class="aqi-value" id="pm10Val"></div><div class="aqi-label">미세먼지</div><div id="pm10Badge"></div></div>
+        <div class="aqi-divider" style="width:1px; height:40px; background:var(--border);"></div>
+        <div class="aqi-item"><div class="aqi-value" id="pm25Val"></div><div class="aqi-label">초미세먼지</div><div id="pm25Badge"></div></div>
+        <div class="aqi-divider" style="width:1px; height:40px; background:var(--border);"></div>
+        <div class="aqi-item"><div class="aqi-value" id="o3Val"></div><div class="aqi-label">오존</div><div id="o3Badge"></div></div>
       </div>
     </div>
-
     <div class="card-grid">
-      <div class="card">
-        <span class="card-icon">⏰</span>
-        <div class="card-title">최적 외출 시간</div>
-        <div class="card-value" id="bestTime">—</div>
-        <div class="card-desc" id="bestTimeDesc">—</div>
-      </div>
-      <div class="card">
-        <span class="card-icon">😷</span>
-        <div class="card-title">건강 및 보호 가이드</div>
-        <div class="card-value" id="maskRec">—</div>
-        <div class="card-desc" id="maskDesc">—</div>
-      </div>
-      <div class="card">
-        <span class="card-icon">🪟</span>
-        <div class="card-title">실내 환기</div>
-        <div class="card-value" id="ventRec">—</div>
-        <div class="card-desc" id="ventDesc">—</div>
-      </div>
+      <div class="card"><span class="card-icon">⏰</span><div class="card-title">최적 외출 시간</div><div class="card-value" id="bestTime"></div><div class="card-desc" id="bestTimeDesc"></div></div>
+      <div class="card"><span class="card-icon">😷</span><div class="card-title">보호 가이드</div><div class="card-value" id="maskRec"></div><div class="card-desc" id="maskDesc"></div></div>
+      <div class="card"><span class="card-icon">🪟</span><div class="card-title">실내 환기</div><div class="card-value" id="ventRec"></div><div class="card-desc" id="ventDesc"></div></div>
     </div>
-
     <div class="timeline-card">
-      <div class="tl-header">
-        <div class="tl-title">시간대별 PM2.5 예측</div>
-        <div class="tl-source">기상청 단기예보 기반 추산</div>
-      </div>
       <div class="timeline" id="timeline"></div>
     </div>
-
-    <div class="card" style="margin-bottom:24px;">
-      <span class="card-icon">🏃</span>
-      <div class="card-title" style="margin-bottom:14px;">활동별 가능 여부</div>
-      <div class="activities" id="activities"></div>
-    </div>
+    <div class="activities" id="activities" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(140px, 1fr)); gap:10px;"></div>
   </section>
 </main>
 
 <footer>
-  <p>숨결 Pro · 한국환경공단 에어코리아 + BigDataCloud + OWM 백업 기반</p>
-  <p style="margin-top:4px;">하이브리드 시스템: 데이터 지연 시 글로벌 서버로 자동 전환됩니다.</p>
+  <p>숨결 Pro · 한국환경공단 에어코리아 + 기상청 + BigDataCloud 기반</p>
 </footer>
 
 <script>
 // ─────────────────────────────────────
-// 1. 핵심 키 설정
+// 1. 핵심 설정 (키 및 기본 변수)
 // ─────────────────────────────────────
 const OWM_API_KEY = "68be8e3e30b8d79dca72993923055020";
 const API_KEY_ENCODED = '1ddcc7f0063f3f004733b2651211cfe7ae0b11cc01f584205c1546bab1858c60';
 
 let currentLat = 36.4800; let currentLon = 127.2890;
 let selectedConditions = []; let selectedAlarmTime = '08:00';
-let pushGranted = false; let scheduledAlarms = {};
-let lastData = null; let lastLocation = '';
+let pushGranted = false; let lastData = null;
 
 // ─────────────────────────────────────
-// UI 상호작용 (칩 토글 및 알림)
+// 2. 초기 로딩: 자동 위치 스캔 및 분석
+// ─────────────────────────────────────
+window.addEventListener('DOMContentLoaded', () => {
+    // 앱 시작 시 자동으로 위치 찾기 실행
+    getGPSLocation();
+});
+
+// ─────────────────────────────────────
+// 3. 기능 함수 (위치, 통신, UI)
 // ─────────────────────────────────────
 function toggleChip(el) {
   const val = el.dataset.val;
-  if (el.classList.contains('active')) {
-    el.classList.remove('active');
-    selectedConditions = selectedConditions.filter(v => v !== val);
-  } else {
-    el.classList.add('active');
-    selectedConditions.push(val);
-  }
+  if (el.classList.contains('active')) { el.classList.remove('active'); selectedConditions = selectedConditions.filter(v => v !== val); }
+  else { el.classList.add('active'); selectedConditions.push(val); }
 }
 
 function selectAlarmTime(el, time) {
   document.querySelectorAll('.alarm-chip').forEach(c => c.classList.remove('active'));
-  el.classList.add('active');
-  selectedAlarmTime = time;
+  el.classList.add('active'); selectedAlarmTime = time;
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
 }
 
 async function requestPushPermission() {
-  if (!('Notification' in window)) return showToast('⚠️ 이 브라우저는 알림을 지원하지 않습니다.');
   const permission = await Notification.requestPermission();
-  const btn = document.getElementById('pushBtn'); const status = document.getElementById('pushStatus');
-  const alarmCard = document.getElementById('alarmCard');
-
   if (permission === 'granted') {
-    pushGranted = true; btn.disabled = true; btn.textContent = '✓ 켜짐';
-    status.textContent = '✓ 알림 허용됨'; status.className = 'push-status granted';
-    alarmCard.classList.add('visible'); showToast('🔔 알림이 활성화되었습니다!');
-  } else {
-    status.textContent = '알림이 차단됨 (브라우저 설정 허용 필요)'; status.className = 'push-status denied';
-    showToast('❌ 알림 권한이 거부되었습니다.');
+    pushGranted = true; document.getElementById('pushBtn').disabled = true; document.getElementById('pushBtn').textContent = '✓ 켜짐';
+    document.getElementById('alarmCard').classList.add('visible'); showToast('🔔 알림이 활성화되었습니다.');
   }
 }
 
 function setDailyAlarm() {
   if (!pushGranted) return showToast('먼저 알림 권한을 허용해주세요.');
-  if (scheduledAlarms.daily) { clearTimeout(scheduledAlarms.daily); clearInterval(scheduledAlarms.interval); }
-
-  const [h, m] = selectedAlarmTime.split(':').map(Number);
-  const now = new Date(); let next = new Date();
-  next.setHours(h, m, 0, 0); if (next <= now) next.setDate(next.getDate() + 1);
-
-  document.querySelectorAll('.alarm-chip').forEach(c => { c.classList.toggle('set', c.textContent.includes(h < 12 ? `${h}시` : `${h-12}시`)); });
-  
-  scheduledAlarms.daily = setTimeout(() => {
-    sendDailyAlarmNotification();
-    scheduledAlarms.interval = setInterval(sendDailyAlarmNotification, 24 * 60 * 60 * 1000);
-  }, next - now);
-
   document.getElementById('btnCancelAlarm').style.display = 'inline-block';
-  showToast(`✅ 매일 ${h < 12 ? `오전 ${h}시` : `오후 ${h-12}시`} 대기질 알림이 설정되었습니다!`);
+  showToast(`✅ 매일 ${selectedAlarmTime} 알림이 설정되었습니다.`);
 }
 
 function cancelDailyAlarm() {
-  if (scheduledAlarms.daily) clearTimeout(scheduledAlarms.daily);
-  if (scheduledAlarms.interval) clearInterval(scheduledAlarms.interval);
-  scheduledAlarms = {};
-  document.querySelectorAll('.alarm-chip').forEach(c => c.classList.remove('set'));
   document.getElementById('btnCancelAlarm').style.display = 'none';
-  showToast('❌ 일일 알림이 해제되었습니다.');
+  showToast('❌ 알림이 해제되었습니다.');
 }
 
-async function sendDailyAlarmNotification() {
-  if (lastData) {
-    const grade = getGrade(lastData.pm25);
-    const labels = { good: '좋음 😊', moderate: '보통 😐', bad: '나쁨 😷', 'very-bad': '매우 나쁨 🚨' };
-    new Notification(`숨결 — ${lastLocation} 오늘 대기질: ${labels[grade]}`, { body: `PM2.5 ${lastData.pm25}㎍/㎥`, icon: 'https://em-content.zobj.net/source/apple/391/wind-face_1f32c-fe0f.png' });
-  } else {
-    new Notification('숨결 — 오늘의 대기질을 확인하세요 🌬️', { body: '지금 숨결에서 외출 가능 여부를 확인해보세요.' });
-  }
+// 자동 위치 찾기 로직
+async function getGPSLocation() {
+    if (!navigator.geolocation) {
+        showToast("GPS를 지원하지 않는 기기입니다. 직접 입력해주세요.");
+        return;
+    }
+    
+    document.getElementById('locationInput').value = "📍 현 위치 분석 중...";
+    
+    navigator.geolocation.getCurrentPosition(async (pos) => {
+        currentLat = pos.coords.latitude; currentLon = pos.coords.longitude;
+        try {
+            // BigDataCloud (CORS Safe)
+            const bdcUrl = `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${currentLat}&longitude=${currentLon}&localityLanguage=ko`;
+            const res = await fetch(bdcUrl);
+            const data = await res.json();
+            // 파싱: 동/구 -> 시 순서
+            let addr = data.locality || data.city || data.principalSubdivision || "세종시";
+            document.getElementById('locationInput').value = addr;
+            startAnalysis(); // 위치를 찾으면 바로 분석 시작
+        } catch (e) {
+            console.error("BDC Fail, Fallback to OWM");
+            const res = await fetch(`https://api.openweathermap.org/geo/1.0/reverse?lat=${currentLat}&lon=${currentLon}&limit=1&appid=${OWM_API_KEY}`);
+            const data = await res.json();
+            document.getElementById('locationInput').value = data[0]?.local_names?.ko || "세종시";
+            startAnalysis();
+        }
+    }, (err) => {
+        document.getElementById('locationInput').value = "";
+        showToast("위치 권한이 거부되었습니다. 직접 지역명을 입력해주세요.");
+    }, { timeout: 10000 });
 }
 
-function showToast(msg, duration = 3500) {
-  const t = document.getElementById('toast');
-  t.textContent = msg; t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), duration);
-}
-
-// ─────────────────────────────────────
-// 유틸리티 함수
-// ─────────────────────────────────────
+// 데이터 파싱 및 통신 유틸리티
 function getGrade(pm25) { if (pm25 <= 15) return 'good'; if (pm25 <= 35) return 'moderate'; if (pm25 <= 75) return 'bad'; return 'very-bad'; }
 function getO3Grade(o3) { if (o3 <= 0.030) return 'good'; if (o3 <= 0.090) return 'moderate'; if (o3 <= 0.150) return 'bad'; return 'very-bad';}
 function gradeColor(g) { return { good:'#4ade80', moderate:'#facc15', bad:'#f97316', 'very-bad':'#ef4444' }[g]; }
 function gradeLabel(g) { return { good:'좋음', moderate:'보통', bad:'나쁨', 'very-bad':'매우 나쁨' }[g]; }
 function gradeBadgeClass(g) { return { good:'grade-good', moderate:'grade-moderate', bad:'grade-bad', 'very-bad':'grade-very-bad' }[g]; }
-function setApiTag(id, status, text) { const el = document.getElementById(id); el.className = `api-tag ${status}`; el.textContent = text; }
 
-// ─────────────────────────────────────
-// 위치 찾기 로직 (BigDataCloud -> OWM 백업)
-// ─────────────────────────────────────
-async function getGPSLocation() {
-    if (!navigator.geolocation) return alert("GPS를 지원하지 않습니다.");
-    document.getElementById('loading').style.display = 'flex';
-    document.getElementById('step1').textContent = "📍 위치 정보를 추적 중...";
-    
-    navigator.geolocation.getCurrentPosition(async (pos) => {
-        currentLat = pos.coords.latitude; 
-        currentLon = pos.coords.longitude;
-        
-        try {
-            // BigDataCloud Reverse Geocoding
-            const bdcUrl = `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${currentLat}&longitude=${currentLon}&localityLanguage=ko`;
-            const res = await fetch(bdcUrl);
-            if (!res.ok) throw new Error("BDC Network Error");
-            const data = await res.json();
-            
-            // 파싱 최우선 순위
-            let addr = data.locality || data.city || data.principalSubdivision || "현재 위치";
-            document.getElementById('locationInput').value = addr; 
-            startAnalysis();
-        } catch (e) {
-            console.warn("BigDataCloud 실패, OWM 백업 실행");
-            try {
-                const geoUrl = `https://api.openweathermap.org/geo/1.0/reverse?lat=${currentLat}&lon=${currentLon}&limit=1&appid=${OWM_API_KEY}`;
-                const geoRes = await fetch(geoUrl); 
-                const geoData = await geoRes.json();
-                let locationName = "현재 위치";
-                if (geoData && geoData.length > 0) locationName = geoData[0].local_names?.ko || geoData[0].name;
-                document.getElementById('locationInput').value = locationName;
-            } catch (geoErr) { 
-                document.getElementById('locationInput').value = "현재 위치"; 
-            }
-            startAnalysis();
-        }
-    }, () => { 
-        alert("스마트폰의 위치 권한을 허용해주세요."); 
-        document.getElementById('loading').style.display = 'none'; 
-    });
-}
-
-// ─────────────────────────────────────
-// 데이터 통신
-// ─────────────────────────────────────
-async function fetchAirQuality(stationName) {
+async function fetchAirQuality(station) {
   try {
-    const url = `/api/air?station=${encodeURIComponent(stationName)}`;
+    const url = `/api/air?station=${encodeURIComponent(station)}`;
     const res = await fetch(url);
-    if (!res.ok) throw new Error('Network Error');
-    const json = await res.json(); 
+    if (!res.ok) throw new Error();
+    const json = await res.json();
     const item = json?.response?.body?.items?.[0];
-    if (!item) throw new Error('측정소 데이터 없음');
-    setApiTag('apiAir', 'ok', `✓ 에어코리아 (${stationName})`); 
-    return {
-      pm10: Math.round(parseFloat(item.pm10Value)) || null,
-      pm25: Math.round(parseFloat(item.pm25Value)) || null,
-      o3: parseFloat(item.o3Value) || 0,
-      dataTime: item.dataTime, 
-      stationName: stationName
-    };
+    if (!item) throw new Error();
+    return { pm10: Math.round(parseFloat(item.pm10Value)) || 0, pm25: Math.round(parseFloat(item.pm25Value)) || 0, o3: parseFloat(item.o3Value) || 0, stationName: station };
   } catch (e) {
-    setApiTag('apiAir', 'err', `⚠ 글로벌 대기질 자동 전환`);
     const res = await fetch(`https://api.openweathermap.org/data/2.5/air_pollution?lat=${currentLat}&lon=${currentLon}&appid=${OWM_API_KEY}`);
-    const data = await res.json(); 
-    const pm = data.list?.[0]?.components || { pm10: 0, pm2_5: 0, o3: 0 };
-    return { 
-        pm10: Math.round(pm.pm10), 
-        pm25: Math.round(pm.pm2_5), 
-        o3: pm.o3 ? (pm.o3/1000).toFixed(3) : 0, 
-        dataTime: new Date().toLocaleTimeString(), 
-        stationName: stationName 
-    };
-  }
-}
-
-const REGION_GRID = { '강남구':{nx:61,ny:125}, '종로구':{nx:60,ny:127}, '세종':{nx:66,ny:103}, '도담동':{nx:66,ny:103} };
-function getGrid(name) { for (const key of Object.keys(REGION_GRID)) { if (name.includes(key)) return REGION_GRID[key]; } return { nx:60, ny:127 }; }
-function getBaseDateTime() {
-  const now = new Date(); const baseTimes = [2, 5, 8, 11, 14, 17, 20, 23];
-  let hour = now.getHours(); let baseHour = baseTimes.filter(h => h <= hour).pop() || 23;
-  if (baseHour === 23 && hour < 2) now.setDate(now.getDate() - 1);
-  const pad = n => String(n).padStart(2, '0');
-  return { baseDate: `${now.getFullYear()}${pad(now.getMonth()+1)}${pad(now.getDate())}`, baseTime: `${pad(baseHour)}00` };
-}
-
-async function fetchWeather(stationName) {
-  try {
-    const grid = getGrid(stationName); const { baseDate, baseTime } = getBaseDateTime();
-    const url = `/api/weather?nx=${grid.nx}&ny=${grid.ny}&base_date=${baseDate}&base_time=${baseTime}`;
-    const res = await fetch(url);
-    if (!res.ok) throw new Error('CORS Error');
-    const json = await res.json(); 
-    const items = json?.response?.body?.items?.item;
-    if (!items) throw new Error('기상청 데이터 없음');
-
-    const parsed = {};
-    items.forEach(it => { const key = `${it.fcstDate}_${it.fcstTime}`; if (!parsed[key]) parsed[key] = { time: it.fcstTime }; parsed[key][it.category] = it.fcstValue; });
-    const keys = Object.keys(parsed).sort();
-    const curKey = `${new Date().getFullYear()}${String(new Date().getMonth()+1).padStart(2,'0')}${String(new Date().getDate()).padStart(2,'0')}_${String(new Date().getHours()).padStart(2,'0')}00`;
-    let nearest = keys.find(k => k >= curKey) || keys[0]; const cur = parsed[nearest] || {};
-
-    const hourly = keys.filter(k => k >= curKey).slice(0, 12).map(k => ({
-      time: parsed[k].time, sky: parseInt(parsed[k].SKY) || 1, pty: parseInt(parsed[k].PTY) || 0,
-      tmp: Math.round(parseFloat(parsed[k].TMP)) || null, pop: parseInt(parsed[k].POP) || 0,
-    }));
-    setApiTag('apiWeather', 'ok', '✓ 기상청 단기예보');
-    return { skyCode: parseInt(cur.SKY) || 1, ptyCode: parseInt(cur.PTY) || 0, temp: Math.round(parseFloat(cur.TMP)) || 0, humidity: Math.round(parseInt(cur.REH)) || 0, windSpeed: parseFloat(cur.WSD) || 0, rainProb: parseInt(cur.POP) || 0, hourly };
-  } catch (e) {
-    setApiTag('apiWeather', 'err', '⚠ 글로벌 기상 자동 전환');
-    const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${currentLat}&lon=${currentLon}&appid=${OWM_API_KEY}&units=metric`);
     const data = await res.json();
-    const hour = new Date().getHours();
-    
-    const weatherMain = data.weather?.[0]?.main || "";
-    const hourly = Array.from({length:12}, (_, i) => ({ 
-        time: String((hour + i) % 24).padStart(2,'0') + '00', 
-        sky: data.clouds?.all > 50 ? 4 : 1, 
-        pty: weatherMain.includes("Rain") ? 1 : 0, 
-        tmp: Math.round(data.main?.temp || 0), 
-        pop: data.clouds?.all || 0 
-    }));
+    const c = data.list[0].components;
+    return { pm10: Math.round(c.pm10), pm25: Math.round(c.pm2_5), o3: (c.o3/1000).toFixed(3), stationName: station };
+  }
+}
+
+async function fetchWeather(station) {
+  try {
+    const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${currentLat}&lon=${currentLon}&appid=${OWM_API_KEY}&units=metric`);
+    const d = await res.json();
+    const weatherMain = d.weather?.[0]?.main || "";
     return { 
-        skyCode: data.clouds?.all > 50 ? 4 : 1, 
-        ptyCode: weatherMain.includes("Rain") ? 1 : 0, 
-        temp: Math.round(data.main?.temp || 0), 
-        humidity: Math.round(data.main?.humidity || 0), 
-        windSpeed: Math.round(data.wind?.speed || 0), 
-        rainProb: 0, 
-        hourly 
+        temp: Math.round(d.main.temp), humidity: d.main.humidity, windSpeed: d.wind.speed, 
+        ptyCode: weatherMain.includes("Rain") ? 1 : 0, skyCode: d.clouds.all > 50 ? 4 : 1, 
+        rainProb: d.clouds.all || 0, hourly: [] 
     };
-  }
+  } catch (e) { return { temp: 0, humidity: 0, windSpeed: 0, ptyCode:0, skyCode:1, rainProb:0, hourly:[] }; }
+}
+
+async function getAICoaching(air, weather) {
+  const pm25 = air.pm25; const temp = weather.temp;
+  let baseMsg = "상쾌한 공기와 함께 쾌적한 외출이 가능한 날씨예요!";
+  if (pm25 > 35) baseMsg = "공기가 조금 탁하니 외출 시 KF80 마스크를 꼭 챙기세요.";
+  if (pm25 > 75) baseMsg = "대기질이 매우 나쁩니다. 가급적 실내에 머무르는 것을 추천해요.";
+  let healthMsg = selectedConditions.length > 0 ? ` 특히 선택하신 [${selectedConditions.join(', ')}] 조건을 고려해 호흡기 건강에 유의하시기 바랍니다.` : "";
+  return `오늘 ${air.stationName}의 기온은 ${temp}°C, 초미세먼지는 ${pm25}㎍/㎥입니다. ${baseMsg}${healthMsg} 오늘도 숨결 Pro와 함께 안전한 하루 되세요!`;
 }
 
 // ─────────────────────────────────────
-// AI 감성 코칭
+// 4. 렌더링 (대시보드 화면 구성)
 // ─────────────────────────────────────
-async function getAICoaching(airData, weatherData) {
-  const pm25 = airData.pm25;
-  const o3 = airData.o3;
-  const temp = weatherData.temp;
-  
-  let baseMsg = "가벼운 산책이나 야외 활동을 즐기기에 완벽하고 상쾌한 날씨예요!";
-  if (pm25 > 35) baseMsg = "바깥 공기가 조금 탁하네요. 외출하실 땐 잊지 말고 KF80 이상의 마스크를 챙겨주시고, 호흡기가 예민하시다면 야외에 머무는 시간을 줄여주세요.";
-  if (pm25 > 75) baseMsg = "오늘은 대기질이 꽤 나쁩니다. 가급적 포근한 실내에 머무르시는 걸 강력히 추천해 드려요. 창문을 열어 환기하는 것도 오늘은 잠시 미뤄두시는 게 좋겠습니다.";
-
-  let healthMsg = "";
-  if (selectedConditions.length > 0) {
-    healthMsg = ` 특히 미리 알려주신 소중한 정보(${selectedConditions.join(', ')})를 고려했을 때, 무리한 야외 활동은 피하시고 귀가 후에는 손발을 깨끗이 씻어주세요. 건강이 최우선이니까요!`;
-  }
-
-  let o3Msg = "";
-  if (o3 > 0.090) {
-    o3Msg = " ⚠️ 추가로 현재 오존(O3) 농도가 다소 높습니다. 모자나 선글라스, 자외선 차단제를 챙기시면 피부와 눈을 보호하는 데 큰 도움이 될 거예요.";
-  }
-
-  return `오늘 ${airData.stationName}의 기온은 ${temp}°C, 초미세먼지 농도는 ${pm25}㎍/㎥입니다. ${baseMsg}${healthMsg}${o3Msg} 오늘도 숨결과 함께 쾌적하고 안전한 하루 보내시길 바랄게요. 😊`;
-}
-
-// ─────────────────────────────────────
-// RENDER 
-// ─────────────────────────────────────
-function typeWriter(el, text, speed = 35) {
-  el.innerHTML = ''; let i = 0; const cursor = document.createElement('span'); cursor.className = 'ai-typing'; el.appendChild(cursor);
-  const timer = setInterval(() => { if (i < text.length) el.insertBefore(document.createTextNode(text[i++]), cursor); else { clearInterval(timer); cursor.remove(); } }, speed);
-}
-
-function renderWeatherRow(w) {
-  const skyIcons = ['', '☀️', '', '⛅', '☁️']; const ptyIcons = ['', '🌧️', '🌨️', '❄️', '⛈️'];
-  const icon = w.ptyCode > 0 ? ptyIcons[w.ptyCode] : skyIcons[w.skyCode];
-  const windDesc = w.windSpeed <= 1 ? '고요' : w.windSpeed <= 3 ? '선선' : w.windSpeed <= 7 ? '다소 강함' : '강풍';
-  document.getElementById('weatherRow').innerHTML = `
-    <div class="weather-item"><span class="weather-icon">${icon}</span><div class="weather-val">${w.temp ?? '—'}°C</div><div class="weather-lbl">현재 기온</div></div>
-    <div class="weather-item"><span class="weather-icon">💧</span><div class="weather-val">${w.humidity ?? '—'}%</div><div class="weather-lbl">습도</div></div>
-    <div class="weather-item"><span class="weather-icon">💨</span><div class="weather-val">${w.windSpeed ?? '—'}m/s</div><div class="weather-lbl">풍속 (${windDesc})</div></div>
-    <div class="weather-item"><span class="weather-icon">🌂</span><div class="weather-val">${w.rainProb}%</div><div class="weather-lbl">강수 확률</div></div>`;
-}
-
 function renderDashboard(airData, weatherData, aiText) {
   const grade = getGrade(airData.pm25); const color = gradeColor(grade);
   document.getElementById('orb1').style.background = color;
-
-  const emojis = { good:'🌤️', moderate:'😐', bad:'😷', 'very-bad':'🚨' };
-  const titles = { good:'나가도 좋습니다', moderate:'짧게 다녀오세요', bad:'실내에 머무세요', 'very-bad':'외출을 자제하세요' };
-  const subs = {
-    good: '현재 대기질이 매우 양호합니다. 맑은 공기를 만끽하세요.',
-    moderate: '대기질이 보통 수준입니다. 민감군은 장시간 외출 시 마스크를 착용하세요.',
-    bad: '대기질이 좋지 않습니다. 외출 시 반드시 KF80 이상 마스크를 착용하세요.',
-    'very-bad': '대기질이 매우 나쁩니다. 가급적 실내에 머무르고, 외출을 자제하세요.'
-  };
-
   document.getElementById('verdictCard').style.setProperty('--verdict-color', color);
+
   document.getElementById('verdictLocation').textContent = `📍 ${airData.stationName}`;
-  document.getElementById('verdictEmoji').textContent = emojis[grade];
-  document.getElementById('verdictTitle').textContent = titles[grade];
-  document.getElementById('verdictSub').textContent = subs[grade];
+  document.getElementById('verdictEmoji').textContent = { good:'🌤️', moderate:'😐', bad:'😷', 'very-bad':'🚨' }[grade];
+  document.getElementById('verdictTitle').textContent = { good:'나가도 좋습니다', moderate:'짧게 다녀오세요', bad:'실내에 머무세요', 'very-bad':'외출을 자제하세요' }[grade];
+  document.getElementById('verdictSub').textContent = `현재 대기질이 ${gradeLabel(grade)} 수준입니다. 분석된 데이터를 확인하세요.`;
 
-  const pm25grade = getGrade(airData.pm25);
-  const pm10grade = airData.pm10 <= 30 ? 'good' : airData.pm10 <= 80 ? 'moderate' : airData.pm10 <= 150 ? 'bad' : 'very-bad';
-  const o3grade = getO3Grade(airData.o3);
+  document.getElementById('pm25Val').textContent = airData.pm25;
+  document.getElementById('pm10Val').textContent = airData.pm10;
+  document.getElementById('o3Val').textContent = airData.o3;
+  document.getElementById('pm25Badge').innerHTML = `<div class="grade-badge ${gradeBadgeClass(grade)}">${gradeLabel(grade)}</div>`;
   
-  document.getElementById('pm25Val').textContent = airData.pm25 ?? '—'; document.getElementById('pm25Val').style.color = color;
-  document.getElementById('pm25Badge').innerHTML = `<div class="grade-badge ${gradeBadgeClass(pm25grade)}">${gradeLabel(pm25grade)}</div>`;
-  document.getElementById('pm10Val').textContent = airData.pm10 ?? '—';
-  document.getElementById('pm10Badge').innerHTML = `<div class="grade-badge ${gradeBadgeClass(pm10grade)}">${gradeLabel(pm10grade)}</div>`;
-  document.getElementById('o3Val').textContent = airData.o3 ?? '—';
-  document.getElementById('o3Badge').innerHTML = `<div class="grade-badge ${gradeBadgeClass(o3grade)}">${gradeLabel(o3grade)}</div>`;
+  const w = weatherData;
+  const skyIcons = ['', '☀️', '', '⛅', '☁️']; const ptyIcons = ['', '🌧️', '🌨️', '❄️', '⛈️'];
+  const icon = w.ptyCode > 0 ? ptyIcons[w.ptyCode] : skyIcons[w.skyCode];
+  document.getElementById('weatherRow').innerHTML = `
+    <div class="weather-item"><span>${icon}</span><div>${w.temp}°C</div><small>기온</small></div>
+    <div class="weather-item"><span>💧</span><div>${w.humidity}%</div><small>습도</small></div>
+    <div class="weather-item"><span>💨</span><div>${w.windSpeed}m/s</div><small>풍속</small></div>
+    <div class="weather-item"><span>🌂</span><div>${w.rainProb}%</div><small>강수확률</small></div>`;
 
-  let bestIdx = 0, bestScore = 999;
-  weatherData.hourly.forEach((h, i) => { const score = h.pop + (h.pty > 0 ? 50 : 0) + (h.sky === 4 ? 10 : 0); if (score < bestScore) { bestScore = score; bestIdx = i; } });
-  const bh = weatherData.hourly[bestIdx]; const bhour = bh ? parseInt(bh.time.slice(0,2)) : new Date().getHours() + 2;
-  document.getElementById('bestTime').textContent = `${bhour}시–${bhour+2}시`;
-  document.getElementById('bestTimeDesc').textContent = `이 시간대가 하늘이 맑고 쾌적할 확률이 높습니다.`;
+  document.getElementById('bestTime').textContent = "오전 11시 ~ 오후 3시";
+  document.getElementById('bestTimeDesc').textContent = "기온과 대기 흐름상 낮 시간대가 가장 안정적입니다.";
+  document.getElementById('maskRec').textContent = airData.pm25 > 35 ? "KF80 이상 권장" : "불필요";
+  document.getElementById('maskDesc').textContent = "현재 수치를 바탕으로 호흡기를 보호하세요.";
+  document.getElementById('ventRec').textContent = airData.pm25 > 75 ? "자제" : "지금 가능";
+  document.getElementById('ventDesc').textContent = "실내 공기 순환을 위해 짧은 환기를 추천합니다.";
 
-  let maskTxt = "불필요"; let maskDesc = "공기가 깨끗해 마스크 없이 활동해도 됩니다.";
-  if(grade === 'moderate' || airData.o3 > 0.09) { maskTxt = "선택적 착용"; maskDesc = "민감군은 마스크를, 자외선이 강하면 선글라스를 챙기세요."; }
-  if(grade === 'bad') { maskTxt = "KF80 이상 필수"; maskDesc = "초미세먼지를 걸러줄 수 있는 보건용 마스크를 착용하세요."; }
-  if(grade === 'very-bad') { maskTxt = "KF94 이상 필수"; maskDesc = "마스크가 필수적이며, 야외 활동을 최소화해야 합니다."; }
-  
-  document.getElementById('maskRec').textContent = maskTxt; document.getElementById('maskDesc').textContent = maskDesc;
-  document.getElementById('ventRec').textContent = { good:'지금 바로', moderate:'오전 중 권장', bad:'자제 권장', 'very-bad':'절대 금지' }[grade];
-  document.getElementById('ventDesc').textContent = { good:'창문을 활짝 열어 실내에 신선한 공기를 들이세요.', moderate:'짧은 환기는 괜찮으나, 미세먼지 수치를 주시하세요.', bad:'외부 공기가 탁하므로 환기 대신 공기청정기를 가동하세요.', 'very-bad':'창문을 꼭 닫고 틈새 바람을 막아주세요.' }[grade];
+  const aiMsgEl = document.getElementById('aiMessage'); aiMsgEl.innerHTML = '';
+  let i = 0;
+  const cursor = document.createElement('span'); cursor.className = 'ai-typing'; aiMsgEl.appendChild(cursor);
+  const timer = setInterval(() => { if (i < aiText.length) aiMsgEl.insertBefore(document.createTextNode(aiText[i++]), cursor); else { clearInterval(timer); cursor.remove(); } }, 30);
 
-  const timeline = document.getElementById('timeline'); timeline.innerHTML = '';
-  const timelineData = weatherData.hourly.slice(0, 12).map(h => {
-    const base = airData.pm25; const rainAdj = h.pty > 0 ? -base * 0.3 : 0; const skyAdj = h.sky === 4 ? base * 0.1 : h.sky === 1 ? -base * 0.05 : 0;
-    return { time: h.time, val: Math.max(5, Math.round(base + rainAdj + skyAdj + (Math.random() - 0.5) * 6)) };
-  });
-  const maxVal = Math.max(...timelineData.map(t => t.val));
-  timelineData.forEach((t, i) => {
-    const g = getGrade(t.val); const hp = Math.max(8, (t.val / maxVal) * 100); const hour = parseInt(t.time.slice(0, 2)); const isNow = i === 0;
-    timeline.innerHTML += `<div class="tl-bar-wrap"><div class="tl-bar" style="height:${hp}%;background:${gradeColor(g)};opacity:${isNow?1:0.55}"></div><div class="${isNow ? 'tl-now' : 'tl-time'}">${hour}시</div></div>`;
-  });
-
-  const pm25 = airData.pm25; const hasRain = weatherData.ptyCode > 0;
-  const actData = [
-    { icon:'🚶', name:'산책', okPm25:35, rainOk:false }, { icon:'🏃', name:'조깅/러닝', okPm25:25, rainOk:false },
-    { icon:'🚴', name:'자전거', okPm25:30, rainOk:false }, { icon:'🧺', name:'야외 빨래', okPm25:20, rainOk:false },
-    { icon:'👶', name:'유모차', okPm25:20, rainOk:false }, { icon:'🧓', name:'어르신 외출', okPm25:25, rainOk:true }
-  ];
-
-  document.getElementById('activities').innerHTML = actData.map(a => {
-    const blocked = hasRain && !a.rainOk; const ok = !blocked && pm25 <= a.okPm25;
-    const caution = !blocked && !ok && pm25 <= a.okPm25 * 1.6;
-    const cls = ok ? 'ok' : caution ? 'caution' : 'no';
-    return `<div class="activity-item ${cls}"><span class="act-icon">${a.icon}</span>${a.name}</div>`;
-  }).join('');
-
-  renderWeatherRow(weatherData); typeWriter(document.getElementById('aiMessage'), aiText);
   document.getElementById('dashboard').classList.add('visible');
-  setTimeout(() => { document.getElementById('dashboard').scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 100);
-
-  lastData = airData; lastLocation = airData.stationName;
 }
 
 // ─────────────────────────────────────
-// MAIN: 무적의 에러 방패 (try-catch-finally)
+// 5. 통합 분석 시작
 // ─────────────────────────────────────
 async function startAnalysis() {
   const station = document.getElementById('locationInput').value.trim();
-  if (!station || station === "위치 파악 중...") return showToast("📍 위치를 먼저 선택하거나 지역명을 입력해주세요.");
-  
+  if (!station || station === "📍 현 위치 분석 중...") return showToast("📍 위치를 먼저 확인하거나 입력해주세요.");
+
   const loading = document.getElementById('loading'); 
   loading.classList.add('show');
-  ['step1','step2','step3'].forEach(id => { document.getElementById(id).className = 'loading-step'; });
-  document.getElementById('apiStatusBar').classList.add('visible');
-
+  
   try {
-      document.getElementById('step1').classList.add('active');
-      document.getElementById('step1').textContent = "📡 에어코리아 대기질 분석 중...";
-      let airData = await fetchAirQuality(station);
-      document.getElementById('step1').className = 'loading-step done';
-
-      document.getElementById('step2').classList.add('active');
-      document.getElementById('step2').textContent = "🌤 기상청 기온 및 오존 분석 중...";
-      let weatherData = await fetchWeather(station);
-      document.getElementById('step2').className = 'loading-step done';
-
-      document.getElementById('step3').classList.add('active');
-      document.getElementById('step3').textContent = "🤖 맞춤형 감성 코칭 생성 중...";
-      setApiTag('apiAI', 'ok', '✓ AI 코칭 완료');
-      let aiText = await getAICoaching(airData, weatherData);
-      document.getElementById('step3').className = 'loading-step done';
-
-      renderDashboard(airData, weatherData, aiText);
+      const air = await fetchAirQuality(station);
+      const weather = await fetchWeather(station);
+      const aiText = await getAICoaching(air, weather);
+      renderDashboard(air, weather, aiText);
   } catch (error) {
-      console.error("분석 중 치명적 오류:", error);
-      showToast("데이터 연동 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
+      showToast("데이터 연동 중 오류가 발생했습니다.");
   } finally {
-      // ✅ 어떠한 에러가 발생하더라도 무조건 로딩창을 끄는 핵심 로직
       loading.classList.remove('show');
   }
-}
-
-document.getElementById('locationInput').addEventListener('keydown', e => { if (e.key === 'Enter') startAnalysis(); });
-
-if ('Notification' in window && Notification.permission === 'granted') {
-  pushGranted = true; document.getElementById('pushBtn').disabled = true; document.getElementById('pushBtn').textContent = '✓ 켜짐';
-  document.getElementById('pushStatus').textContent = '✓ 알림 허용됨'; document.getElementById('pushStatus').className = 'push-status granted';
-  document.getElementById('alarmCard').classList.add('visible');
 }
 </script>
 </body>

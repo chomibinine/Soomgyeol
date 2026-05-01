@@ -7,7 +7,6 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
     <style>
-        /* [기존 스타일 유지 및 일부 보정] */
         :root {
             --good: #4ade80; --moderate: #facc15; --bad: #f97316; --very-bad: #ef4444;
             --bg: #0a0e1a; --surface: #111827; --surface2: #1a2235;
@@ -32,8 +31,8 @@
         
         .search-container { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 8px; display: flex; gap: 8px; max-width: 600px; margin: 0 auto 20px; }
         .search-container input { flex: 1; background: transparent; border: none; padding: 12px 20px; color: var(--text); font-size: 1rem; outline: none; }
-        .btn-geo { background: rgba(56,189,248,0.1); border: 1px solid var(--accent); color: var(--accent); border-radius: 14px; padding: 0 15px; cursor: pointer; font-size: 0.8rem; }
-        .btn-main { background: var(--accent); color: #0a0e1a; border: none; border-radius: 14px; padding: 12px 25px; font-weight: 700; cursor: pointer; transition: transform 0.2s; }
+        .btn-geo { background: rgba(56,189,248,0.1); border: 1px solid var(--accent); color: var(--accent); border-radius: 14px; padding: 0 15px; cursor: pointer; font-size: 0.8rem; white-space: nowrap; }
+        .btn-main { background: var(--accent); color: #0a0e1a; border: none; border-radius: 14px; padding: 12px 25px; font-weight: 700; cursor: pointer; transition: transform 0.2s; white-space: nowrap; }
         .btn-main:active { transform: scale(0.96); }
 
         /* Dashboard Components */
@@ -67,7 +66,7 @@
 
 <div id="loading">
     <div class="spinner"></div>
-    <p id="loadingText" style="font-family:'Gowun Batang';">현재 위치 분석 중...</p>
+    <p id="loadingText" style="font-family:'Gowun Batang';">실시간 데이터를 수집하는 중...</p>
 </div>
 
 <header>
@@ -87,7 +86,7 @@
 
     <div class="dashboard" id="dashboard">
         <div class="card full-width" style="border-color: var(--accent);">
-            <div style="font-size: 0.7rem; color: var(--accent); margin-bottom: 10px; letter-spacing: 0.1em;">AI 분석 리포트</div>
+            <div id="apiSourceTag" style="display: inline-block; padding: 4px 10px; background: rgba(56,189,248,0.1); color: var(--accent); border-radius: 10px; font-size: 0.7rem; margin-bottom: 12px; letter-spacing: 0.05em;">AI 분석 리포트</div>
             <div id="aiMsg" class="ai-message">분석 데이터를 기다리는 중입니다...</div>
         </div>
 
@@ -116,118 +115,124 @@
 <script>
 /**
  * ──────────────────────────────────────────────────────────────────────────
- * CONFIG & SECURITY (주의: 실제 배포 시 백엔드로 이동 권장)
+ * CONFIG: OWM API 키를 입력해주세요. 공공데이터 키는 api 폴더의 백엔드 파일에 넣습니다.
  * ──────────────────────────────────────────────────────────────────────────
  */
-const API_KEY = "YOUR_ENCODED_API_KEY"; // 공공데이터포털 인코딩 키
-const CLAUDE_API_KEY = "YOUR_CLAUDE_KEY"; // Claude API 키 (프록시 서버 권장)
+const OWM_API_KEY = "발급받은_OpenWeatherMap_API_KEY_입력"; // 반드시 실제 키로 변경하세요!
 
-/**
- * ──────────────────────────────────────────────────────────────────────────
- * 1. GPS & 좌표 변환 로직 (기상청 Lambert 변환)
- * ──────────────────────────────────────────────────────────────────────────
- */
-function dfs_xy_conv(code, v1, v2) {
-    const RE = 6371.00877; // 지구 반지름(km)
-    const GRID = 5.0; // 격자 간격(km)
-    const SLAT1 = 30.0; // 투영 위도1(degree)
-    const SLAT2 = 60.0; // 투영 위도2(degree)
-    const OLON = 126.0; // 기준점 경도(degree)
-    const OLAT = 38.0; // 기준점 위도(degree)
-    const XO = 43; // 기준점 X좌표(GRID)
-    const YO = 136; // 기준점 Y좌표(GRID)
+let currentLat = 37.5665; // 기본 위도 (서울 시청)
+let currentLon = 126.9780; // 기본 경도 (서울 시청)
 
-    const DEGRAD = Math.PI / 180.0;
-    const re = RE / GRID;
-    const slat1 = SLAT1 * DEGRAD;
-    const slat2 = SLAT2 * DEGRAD;
-    const olon = OLON * DEGRAD;
-    const olat = OLAT * DEGRAD;
-
-    let sn = Math.tan(Math.PI * 0.25 + slat2 * 0.5) / Math.tan(Math.PI * 0.25 + slat1 * 0.5);
-    sn = Math.log(Math.cos(slat1) / Math.cos(slat2)) / Math.log(sn);
-    let sf = Math.tan(Math.PI * 0.25 + slat1 * 0.5);
-    sf = Math.pow(sf, sn) * Math.cos(slat1) / sn;
-    let ro = Math.tan(Math.PI * 0.25 + olat * 0.5);
-    ro = re * sf / Math.pow(ro, sn);
-    
-    let rs = {};
-    if (code === "toXY") {
-        rs['lat'] = v1; rs['lng'] = v2;
-        let ra = Math.tan(Math.PI * 0.25 + (v1) * DEGRAD * 0.5);
-        ra = re * sf / Math.pow(ra, sn);
-        let theta = v2 * DEGRAD - olon;
-        if (theta > Math.PI) theta -= 2.0 * Math.PI;
-        if (theta < -Math.PI) theta += 2.0 * Math.PI;
-        theta *= sn;
-        rs['x'] = Math.floor(ra * Math.sin(theta) + XO + 0.5);
-        rs['y'] = Math.floor(ro - ra * Math.cos(theta) + YO + 0.5);
-    }
-    return rs;
-}
+// Enter 키로 검색 실행
+document.getElementById('stationInput').addEventListener('keypress', function (e) {
+    if (e.key === 'Enter') startAnalysis();
+});
 
 // GPS 위치 가져오기
 function getGPSLocation() {
     if (!navigator.geolocation) return alert("GPS를 지원하지 않는 브라우저입니다.");
     
     document.getElementById('loading').style.display = 'flex';
-    navigator.geolocation.getCurrentPosition(async (pos) => {
-        const { latitude, longitude } = pos.coords;
-        const grid = dfs_xy_conv("toXY", latitude, longitude);
+    document.getElementById('loadingText').textContent = "위치 확인 중...";
+    
+    navigator.geolocation.getCurrentPosition((pos) => {
+        currentLat = pos.coords.latitude;
+        currentLon = pos.coords.longitude;
         
-        // 카카오 또는 공공데이터 API를 사용하여 위경도 -> 근처 측정소명 찾기
-        // 여기서는 예시로 가장 가까운 측정소 리스트 API 호출
-        try {
-            const stationName = await fetchNearestStation(latitude, longitude);
-            document.getElementById('stationInput').value = stationName;
-            startAnalysis(grid);
-        } catch (e) {
-            console.error(e);
-            document.getElementById('loading').style.display = 'none';
-        }
+        // 예시용 동네 이름 할당
+        document.getElementById('stationInput').value = "현재 위치"; 
+        startAnalysis();
     }, () => {
         alert("위치 권한을 허용해주세요.");
         document.getElementById('loading').style.display = 'none';
     });
 }
 
-/**
- * ──────────────────────────────────────────────────────────────────────────
- * 2. API 데이터 호출부 (Encapsulated)
- * ──────────────────────────────────────────────────────────────────────────
- */
-
-// 근처 측정소 찾기 (TM 좌표계 변환 필요 - 간략화 버전)
-async function fetchNearestStation(lat, lng) {
-    // 실제로는 위경도를 TM좌표로 변환 후 getNearbyMsrstnList API를 호출해야 합니다.
-    // 여기서는 가장 대중적인 측정소 매핑 서비스를 가정합니다.
-    return "종로구"; // 데모용 고정값 (실제 구현 시 API 연동)
-}
-
-async function fetchAirQuality(station) {
-    const url = `https://apis.data.go.kr/B552584/ArpltnInforInqireSvc/getMsrstnAcctoRltmMesureDnsty?serviceKey=${API_KEY}&returnType=json&numOfRows=1&stationName=${encodeURIComponent(station)}&dataTerm=DAILY&ver=1.3`;
-    const res = await fetch(url);
-    const data = await res.json();
-    return data.response.body.items[0];
-}
-
-async function fetchWeather(grid) {
+// 기상청 API용 기준 시간(base_time) 계산 함수
+function getKmaBaseDateTime() {
     const now = new Date();
-    const baseDate = now.toISOString().slice(0,10).replace(/-/g, '');
-    // 기상청 baseTime 로직 (3시간 단위 등 예외처리 필요)
-    const url = `https://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getVilageFcst?serviceKey=${API_KEY}&pageNo=1&numOfRows=100&dataType=JSON&base_date=${baseDate}&base_time=0500&nx=${grid.x}&ny=${grid.y}`;
-    const res = await fetch(url);
-    const data = await res.json();
-    return data.response.body.items.item;
+    let year = now.getFullYear();
+    let month = now.getMonth() + 1;
+    let date = now.getDate();
+    let hours = now.getHours();
+
+    const baseHours = [2, 5, 8, 11, 14, 17, 20, 23];
+    let targetHour = baseHours.reverse().find(h => h <= hours);
+
+    if (targetHour === undefined) {
+        now.setDate(now.getDate() - 1);
+        year = now.getFullYear();
+        month = now.getMonth() + 1;
+        date = now.getDate();
+        targetHour = 23;
+    }
+
+    const pad = (n) => String(n).padStart(2, '0');
+    return { baseDate: `${year}${pad(month)}${pad(date)}`, baseTime: `${pad(targetHour)}00` };
 }
 
-/**
- * ──────────────────────────────────────────────────────────────────────────
- * 3. 통합 분석 실행
- * ──────────────────────────────────────────────────────────────────────────
- */
-async function startAnalysis(passedGrid = null) {
-    const station = document.getElementById('stationInput').value;
+// 대기질 가져오기 (Main: 공공데이터 -> Fallback: OWM)
+async function fetchAirQuality(station) {
+    try {
+        const res = await fetch(`/api/air?station=${encodeURIComponent(station)}`);
+        if (!res.ok) throw new Error("서버 에러");
+        const data = await res.json();
+        
+        if (data.response?.header?.resultCode !== "00") throw new Error("데이터 오류");
+        
+        const item = data.response.body.items[0];
+        return {
+            source: "한국환경공단 에어코리아",
+            stationName: item.stationName,
+            pm25Value: item.pm25Value,
+            pm10Value: item.pm10Value,
+            o3Value: item.o3Value,
+            dataTime: item.dataTime
+        };
+    } catch (err) {
+        console.warn("에어코리아 호출 실패, OpenWeatherMap으로 대체합니다.", err);
+        const url = `https://api.openweathermap.org/data/2.5/air_pollution?lat=${currentLat}&lon=${currentLon}&appid=${OWM_API_KEY}`;
+        const res = await fetch(url);
+        const data = await res.json();
+        const pm = data.list[0].components;
+        
+        return {
+            source: "OpenWeatherMap 글로벌 데이터",
+            stationName: station === "현재 위치" ? "현재 위치" : station + " (글로벌 예측)",
+            pm25Value: pm.pm2_5,
+            pm10Value: pm.pm10,
+            o3Value: pm.o3 || "-",
+            dataTime: new Date().toLocaleTimeString()
+        };
+    }
+}
+
+// 날씨 가져오기 (Main: 공공데이터 -> Fallback: OWM)
+async function fetchWeather() {
+    try {
+        // 좌표 변환 간략화를 위해 임시 고정 격자 사용 (종로구)
+        const { baseDate, baseTime } = getKmaBaseDateTime();
+        const res = await fetch(`/api/weather?nx=60&ny=127&base_date=${baseDate}&base_time=${baseTime}`);
+        if (!res.ok) throw new Error("서버 에러");
+        const data = await res.json();
+        
+        if (data.response?.header?.resultCode !== "00") throw new Error("데이터 오류");
+        return data.response.body.items.item;
+    } catch (err) {
+        console.warn("기상청 호출 실패, OpenWeatherMap으로 대체합니다.", err);
+        const url = `https://api.openweathermap.org/data/2.5/weather?lat=${currentLat}&lon=${currentLon}&appid=${OWM_API_KEY}&units=metric`;
+        const res = await fetch(url);
+        const data = await res.json();
+        
+        return [
+            { category: 'TMP', fcstValue: data.main.temp },
+            { category: 'REH', fcstValue: data.main.humidity }
+        ];
+    }
+}
+
+async function startAnalysis() {
+    const station = document.getElementById('stationInput').value.trim();
     if (!station) return alert("측정소 또는 지역명을 입력하세요.");
 
     const loading = document.getElementById('loading');
@@ -235,16 +240,15 @@ async function startAnalysis(passedGrid = null) {
     document.getElementById('loadingText').textContent = "실시간 데이터를 수집하는 중...";
 
     try {
-        const grid = passedGrid || { x: 60, y: 127 }; // 입력 시 기본 격자
         const air = await fetchAirQuality(station);
-        const weather = await fetchWeather(grid);
+        const weather = await fetchWeather();
         
         renderData(air, weather);
         await renderAI(air, weather);
 
     } catch (err) {
         console.error(err);
-        alert("데이터를 가져오는 중 오류가 발생했습니다.");
+        alert("데이터를 가져오는 데 실패했습니다. 네트워크 상태를 확인해주세요.");
     } finally {
         loading.style.display = 'none';
         document.getElementById('dashboard').style.display = 'grid';
@@ -252,23 +256,23 @@ async function startAnalysis(passedGrid = null) {
 }
 
 function renderData(air, weather) {
-    const pm25 = air.pm25Value;
-    const pm10 = air.pm10Value;
-    const temp = weather.find(i => i.category === 'TMP')?.fcstValue;
-    const reh = weather.find(i => i.category === 'REH')?.fcstValue;
+    const pm25 = parseFloat(air.pm25Value) || 0;
+    const pm10 = parseFloat(air.pm10Value) || 0;
+    const temp = weather.find(i => i.category === 'TMP')?.fcstValue || "-";
+    const reh = weather.find(i => i.category === 'REH')?.fcstValue || "-";
 
     document.getElementById('pm25Val').textContent = `${pm25}㎍/㎥`;
     document.getElementById('tempVal').textContent = `${temp}°C`;
-    document.getElementById('verdictTitle').textContent = `${air.stationName} 측정소`;
+    document.getElementById('verdictTitle').textContent = air.stationName;
+    document.getElementById('apiSourceTag').textContent = `AI 분석 리포트 (기반: ${air.source})`;
     
     document.getElementById('weatherInfo').innerHTML = `
         • 미세먼지(PM10): ${pm10}㎍/㎥ <br>
         • 습도: ${reh}% <br>
-        • 오존: ${air.o3Value}ppm <br>
-        • 데이터 기준: ${air.dataTime}
+        • 오존: ${air.o3Value || "-"}ppm <br>
+        • 데이터 기준: ${air.dataTime || new Date().toLocaleTimeString()}
     `;
 
-    // 등급별 테마 색상 변경
     const color = pm25 <= 15 ? '#4ade80' : pm25 <= 35 ? '#facc15' : '#f97316';
     document.getElementById('orb1').style.background = color;
     document.getElementById('pm25Val').style.color = color;
@@ -279,28 +283,25 @@ async function renderAI(air, weather) {
     aiMsgEl.classList.add('ai-typing');
     aiMsgEl.textContent = "AI가 오늘의 공기를 분석하고 있습니다...";
 
-    const prompt = `측정소: ${air.stationName}, 초미세먼지: ${air.pm25Value}, 미세먼지: ${air.pm10Value}, 기온: ${weather.find(i => i.category === 'TMP')?.fcstValue}도. 
-    이 데이터를 바탕으로 외출 여부와 마스크 착용, 환기 여부를 3문장으로 조언해줘. 다정하지만 전문적인 어조로.`;
+    const pm25 = parseFloat(air.pm25Value) || 0;
+    const temp = weather.find(i => i.category === 'TMP')?.fcstValue || "-";
+    
+    let advice = "야외 활동을 즐기기에 좋은 날씨입니다.";
+    if (pm25 > 35) advice = "외출 시 KF80 이상의 마스크 착용을 권장하며, 무리한 실외 활동은 자제하세요.";
+    if (pm25 > 75) advice = "대기질이 매우 좋지 않습니다. 가급적 외출을 삼가고 실내에 머무르세요.";
 
-    try {
-        // 실제 운영 시 프록시 서버를 통해 호출해야 합니다.
-        // 예시용 가상 응답 타이핑 효과
-        const mockResponse = `현재 ${air.stationName}의 초미세먼지 농도는 ${air.pm25Value}㎍/㎥로 다소 높은 편입니다. 외출 시에는 반드시 KF80 이상의 마스크를 착용하시고, 노약자나 호흡기가 예민하신 분들은 야외 활동 시간을 줄이는 것이 좋겠습니다. 실내 환기는 미세먼지가 조금 더 잦아든 오후 시간대로 미루는 것을 추천드려요.`;
-        
-        let i = 0;
-        aiMsgEl.textContent = "";
-        const timer = setInterval(() => {
-            if (i < mockResponse.length) {
-                aiMsgEl.textContent += mockResponse[i++];
-            } else {
-                clearInterval(timer);
-                aiMsgEl.classList.remove('ai-typing');
-            }
-        }, 30);
-
-    } catch (e) {
-        aiMsgEl.textContent = "AI 분석 서비스를 일시적으로 이용할 수 없습니다.";
-    }
+    const mockResponse = `현재 ${air.stationName}의 초미세먼지는 ${air.pm25Value}㎍/㎥입니다. 현재 기온은 ${temp}°C 이며, ${advice}`;
+    
+    let i = 0;
+    aiMsgEl.textContent = "";
+    const timer = setInterval(() => {
+        if (i < mockResponse.length) {
+            aiMsgEl.textContent += mockResponse[i++];
+        } else {
+            clearInterval(timer);
+            aiMsgEl.classList.remove('ai-typing');
+        }
+    }, 30);
 }
 </script>
 </body>

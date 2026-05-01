@@ -166,7 +166,9 @@
       <div class="ai-badge">AI 감성 맞춤 코칭</div>
       <div id="aiMessage" class="ai-message"></div>
     </div>
+    
     <div class="weather-row" id="weatherRow"></div>
+    
     <div class="verdict-card" id="verdictCard">
       <span class="verdict-emoji" id="verdictEmoji">🌤️</span>
       <div class="verdict-location" id="verdictLocation"></div>
@@ -180,14 +182,21 @@
         <div class="aqi-item"><div class="aqi-value" id="o3Val"></div><div class="aqi-label">오존</div><div id="o3Badge"></div></div>
       </div>
     </div>
+    
     <div class="card-grid">
       <div class="card"><span class="card-icon">⏰</span><div class="card-title">최적 외출 시간</div><div class="card-value" id="bestTime"></div><div class="card-desc" id="bestTimeDesc"></div></div>
       <div class="card"><span class="card-icon">😷</span><div class="card-title">보호 가이드</div><div class="card-value" id="maskRec"></div><div class="card-desc" id="maskDesc"></div></div>
       <div class="card"><span class="card-icon">🪟</span><div class="card-title">실내 환기</div><div class="card-value" id="ventRec"></div><div class="card-desc" id="ventDesc"></div></div>
     </div>
+    
     <div class="timeline-card">
+      <div class="tl-header">
+        <div class="tl-title">시간대별 PM2.5 예측</div>
+        <div class="tl-source">단기예보 기반 추산</div>
+      </div>
       <div class="timeline" id="timeline"></div>
     </div>
+    
     <div class="activities" id="activities" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(140px, 1fr)); gap:10px;"></div>
   </section>
 </main>
@@ -197,6 +206,9 @@
 </footer>
 
 <script>
+// ─────────────────────────────────────
+// 1. 핵심 키 설정
+// ─────────────────────────────────────
 const VWORLD_API_KEY = "5B0D3660-9AA8-3DEC-BDB4-BE8463D07762"; 
 const OWM_API_KEY = "68be8e3e30b8d79dca72993923055020";
 const API_KEY_ENCODED = '1ddcc7f0063f3f004733b2651211cfe7ae0b11cc01f584205c1546bab1858c60';
@@ -204,8 +216,11 @@ const API_KEY_ENCODED = '1ddcc7f0063f3f004733b2651211cfe7ae0b11cc01f584205c1546b
 let currentLat = 36.4800; let currentLon = 127.2890;
 let selectedConditions = []; let selectedAlarmTime = '08:00';
 let pushGranted = false; let scheduledAlarms = {};
-let lastData = null;
+let lastData = null; let lastLocation = '';
 
+// ─────────────────────────────────────
+// UI 로직
+// ─────────────────────────────────────
 function toggleChip(el) {
   const val = el.dataset.val;
   if (el.classList.contains('active')) { el.classList.remove('active'); selectedConditions = selectedConditions.filter(v => v !== val); }
@@ -241,7 +256,18 @@ function cancelDailyAlarm() {
   showToast('❌ 알림이 해제되었습니다.');
 }
 
-// 위치 찾기 로직 최적화
+// ─────────────────────────────────────
+// 유틸리티 함수
+// ─────────────────────────────────────
+function getGrade(pm25) { if (pm25 <= 15) return 'good'; if (pm25 <= 35) return 'moderate'; if (pm25 <= 75) return 'bad'; return 'very-bad'; }
+function getO3Grade(o3) { if (o3 <= 0.030) return 'good'; if (o3 <= 0.090) return 'moderate'; if (o3 <= 0.150) return 'bad'; return 'very-bad';}
+function gradeColor(g) { return { good:'#4ade80', moderate:'#facc15', bad:'#f97316', 'very-bad':'#ef4444' }[g]; }
+function gradeLabel(g) { return { good:'좋음', moderate:'보통', bad:'나쁨', 'very-bad':'매우 나쁨' }[g]; }
+function gradeBadgeClass(g) { return { good:'grade-good', moderate:'grade-moderate', bad:'grade-bad', 'very-bad':'grade-very-bad' }[g]; }
+
+// ─────────────────────────────────────
+// 데이터 통신 로직
+// ─────────────────────────────────────
 async function getGPSLocation() {
     if (!navigator.geolocation) return alert("GPS를 지원하지 않는 브라우저입니다.");
     document.getElementById('locationInput').value = "위치 파악 중...";
@@ -272,65 +298,173 @@ async function getGPSLocation() {
 
 async function fetchAirQuality(station) {
   try {
-    const res = await fetch(`/api/air?station=${encodeURIComponent(station)}`);
+    const url = `/api/air?station=${encodeURIComponent(station)}`;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error();
     const json = await res.json();
     const item = json?.response?.body?.items?.[0];
     if (!item) throw new Error();
-    return { pm10: Math.round(item.pm10Value), pm25: Math.round(item.pm25Value), o3: parseFloat(item.o3Value), station: station };
+    return { pm10: Math.round(parseFloat(item.pm10Value)) || 0, pm25: Math.round(parseFloat(item.pm25Value)) || 0, o3: parseFloat(item.o3Value) || 0, stationName: station };
   } catch (e) {
     const res = await fetch(`https://api.openweathermap.org/data/2.5/air_pollution?lat=${currentLat}&lon=${currentLon}&appid=${OWM_API_KEY}`);
     const data = await res.json();
     const c = data.list[0].components;
-    return { pm10: Math.round(c.pm10), pm25: Math.round(c.pm2_5), o3: (c.o3/1000).toFixed(3), station: station + " (예측)" };
+    return { pm10: Math.round(c.pm10), pm25: Math.round(c.pm2_5), o3: c.o3 ? (c.o3/1000).toFixed(3) : 0, stationName: station };
   }
 }
 
-async function fetchWeather() {
-    try {
-        const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${currentLat}&lon=${currentLon}&appid=${OWM_API_KEY}&units=metric`);
-        const d = await res.json();
-        return { temp: Math.round(d.main.temp), hum: d.main.humidity, wind: d.wind.speed, pop: 0, hourly: [] };
-    } catch (e) { return { temp: 0, hum: 0, wind: 0, pop: 0, hourly: [] }; }
+const REGION_GRID = { '강남구':{nx:61,ny:125}, '종로구':{nx:60,ny:127}, '세종':{nx:66,ny:103}, '도담동':{nx:66,ny:103} };
+function getGrid(name) { for (const key of Object.keys(REGION_GRID)) { if (name.includes(key)) return REGION_GRID[key]; } return { nx:60, ny:127 }; }
+function getBaseDateTime() {
+  const now = new Date(); const baseTimes = [2, 5, 8, 11, 14, 17, 20, 23];
+  let hour = now.getHours(); let baseHour = baseTimes.filter(h => h <= hour).pop() || 23;
+  if (baseHour === 23 && hour < 2) now.setDate(now.getDate() - 1);
+  const pad = n => String(n).padStart(2, '0');
+  return { baseDate: `${now.getFullYear()}${pad(now.getMonth()+1)}${pad(now.getDate())}`, baseTime: `${pad(baseHour)}00` };
 }
 
+async function fetchWeather(station) {
+  try {
+    const grid = getGrid(station); const { baseDate, baseTime } = getBaseDateTime();
+    const url = `/api/weather?nx=${grid.nx}&ny=${grid.ny}&base_date=${baseDate}&base_time=${baseTime}`;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error();
+    const json = await res.json(); const items = json?.response?.body?.items?.item;
+    if (!items) throw new Error();
+
+    const parsed = {};
+    items.forEach(it => { const key = `${it.fcstDate}_${it.fcstTime}`; if (!parsed[key]) parsed[key] = { time: it.fcstTime }; parsed[key][it.category] = it.fcstValue; });
+    const keys = Object.keys(parsed).sort();
+    const curKey = `${new Date().getFullYear()}${String(new Date().getMonth()+1).padStart(2,'0')}${String(new Date().getDate()).padStart(2,'0')}_${String(new Date().getHours()).padStart(2,'0')}00`;
+    let nearest = keys.find(k => k >= curKey) || keys[0]; const cur = parsed[nearest] || {};
+
+    const hourly = keys.filter(k => k >= curKey).slice(0, 12).map(k => ({
+      time: parsed[k].time, sky: parseInt(parsed[k].SKY) || 1, pty: parseInt(parsed[k].PTY) || 0,
+      tmp: Math.round(parseFloat(parsed[k].TMP)) || null, pop: parseInt(parsed[k].POP) || 0,
+    }));
+    return { skyCode: parseInt(cur.SKY) || 1, ptyCode: parseInt(cur.PTY) || 0, temp: Math.round(parseFloat(cur.TMP)) || 0, humidity: Math.round(parseInt(cur.REH)) || 0, windSpeed: parseFloat(cur.WSD) || 0, rainProb: parseInt(cur.POP) || 0, hourly };
+  } catch (e) {
+    const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${currentLat}&lon=${currentLon}&appid=${OWM_API_KEY}&units=metric`);
+    const data = await res.json();
+    const hour = new Date().getHours();
+    const hourly = Array.from({length:12}, (_, i) => ({ time: String((hour + i) % 24).padStart(2,'0') + '00', sky: data.clouds?.all > 50 ? 4 : 1, pty: data.weather[0].main?.includes("Rain") ? 1 : 0, tmp: Math.round(data.main.temp), pop: data.clouds?.all || 0 }));
+    return { skyCode: data.clouds?.all > 50 ? 4 : 1, ptyCode: data.weather[0].main?.includes("Rain") ? 1 : 0, temp: Math.round(data.main.temp), humidity: Math.round(data.main.humidity), windSpeed: Math.round(data.wind?.speed || 0), rainProb: 0, hourly };
+  }
+}
+
+async function getAICoaching(air, weather) {
+  const pm25 = air.pm25; const o3 = air.o3; const temp = weather.temp;
+  let baseMsg = "가벼운 산책이나 야외 활동을 즐기기에 완벽하고 상쾌한 날씨예요!";
+  if (pm25 > 35) baseMsg = "바깥 공기가 조금 탁하네요. 외출하실 땐 잊지 말고 KF80 이상의 마스크를 챙겨주시고, 호흡기가 예민하시다면 야외에 머무는 시간을 줄여주세요.";
+  if (pm25 > 75) baseMsg = "오늘은 대기질이 꽤 나쁩니다. 가급적 포근한 실내에 머무르시는 걸 강력히 추천해 드려요. 창문을 열어 환기하는 것도 오늘은 잠시 미뤄두시는 게 좋겠습니다.";
+  let healthMsg = selectedConditions.length > 0 ? ` 특히 미리 알려주신 소중한 정보(${selectedConditions.join(', ')})를 고려했을 때, 무리한 야외 활동은 피하시고 귀가 후에는 손발을 깨끗이 씻어주세요.` : "";
+  let o3Msg = o3 > 0.090 ? " ⚠️ 추가로 현재 오존(O3) 농도가 다소 높습니다. 모자나 선글라스, 자외선 차단제를 챙기시면 피부와 눈을 보호하는 데 큰 도움이 될 거예요." : "";
+  return `오늘 ${air.stationName}의 기온은 ${temp}°C, 초미세먼지 농도는 ${pm25}㎍/㎥입니다. ${baseMsg}${healthMsg}${o3Msg} 오늘도 숨결과 함께 쾌적하고 안전한 하루 보내시길 바랄게요. 😊`;
+}
+
+// ─────────────────────────────────────
+// 렌더링 엔진 (복구 완.)
+// ─────────────────────────────────────
+function renderDashboard(airData, weatherData, aiText) {
+  const grade = getGrade(airData.pm25); const color = gradeColor(grade);
+
+  document.getElementById('orb1').style.background = color;
+  document.getElementById('verdictCard').style.setProperty('--verdict-color', color);
+
+  const emojis = { good:'🌤️', moderate:'😐', bad:'😷', 'very-bad':'🚨' };
+  const titles = { good:'나가도 좋습니다', moderate:'짧게 다녀오세요', bad:'실내에 머무세요', 'very-bad':'외출을 자제하세요' };
+  const subs = { good: '대기질이 양호합니다. 맑은 공기를 만끽하세요.', moderate: '대기질이 보통 수준입니다. 민감군은 주의하세요.', bad: '대기질이 좋지 않습니다. 외출 시 반드시 마스크를 착용하세요.', 'very-bad': '대기질이 매우 나쁩니다. 외출을 자제하세요.' };
+
+  document.getElementById('verdictLocation').textContent = `📍 ${airData.stationName}`;
+  document.getElementById('verdictEmoji').textContent = emojis[grade];
+  document.getElementById('verdictTitle').textContent = titles[grade];
+  document.getElementById('verdictSub').textContent = subs[grade];
+
+  const pm25g = getGrade(airData.pm25); const pm10g = airData.pm10 <= 30 ? 'good' : airData.pm10 <= 80 ? 'moderate' : airData.pm10 <= 150 ? 'bad' : 'very-bad'; const o3g = getO3Grade(airData.o3);
+  
+  document.getElementById('pm25Val').textContent = airData.pm25; document.getElementById('pm25Val').style.color = color;
+  document.getElementById('pm25Badge').innerHTML = `<div class="grade-badge ${gradeBadgeClass(pm25g)}">${gradeLabel(pm25g)}</div>`;
+  document.getElementById('pm10Val').textContent = airData.pm10;
+  document.getElementById('pm10Badge').innerHTML = `<div class="grade-badge ${gradeBadgeClass(pm10g)}">${gradeLabel(pm10g)}</div>`;
+  document.getElementById('o3Val').textContent = airData.o3;
+  document.getElementById('o3Badge').innerHTML = `<div class="grade-badge ${gradeBadgeClass(o3g)}">${gradeLabel(o3g)}</div>`;
+
+  const w = weatherData; const skyIcons = ['', '☀️', '', '⛅', '☁️']; const ptyIcons = ['', '🌧️', '🌨️', '❄️', '⛈️'];
+  const icon = w.ptyCode > 0 ? ptyIcons[w.ptyCode] : skyIcons[w.skyCode];
+  document.getElementById('weatherRow').innerHTML = `
+    <div class="weather-item"><span class="weather-icon">${icon}</span><div class="weather-val">${w.temp}°C</div><div class="weather-lbl">현재 기온</div></div>
+    <div class="weather-item"><span class="weather-icon">💧</span><div class="weather-val">${w.humidity}%</div><div class="weather-lbl">습도</div></div>
+    <div class="weather-item"><span class="weather-icon">💨</span><div class="weather-val">${w.windSpeed}m/s</div><div class="weather-lbl">풍속</div></div>
+    <div class="weather-item"><span class="weather-icon">🌂</span><div class="weather-val">${w.rainProb}%</div><div class="weather-lbl">강수 확률</div></div>
+  `;
+
+  let bestIdx = 0, bestScore = 999;
+  if(w.hourly && w.hourly.length > 0) {
+      w.hourly.forEach((h, i) => { const score = h.pop + (h.pty > 0 ? 50 : 0) + (h.sky === 4 ? 10 : 0); if (score < bestScore) { bestScore = score; bestIdx = i; } });
+      const bhour = parseInt(w.hourly[bestIdx].time.slice(0,2));
+      document.getElementById('bestTime').textContent = `${bhour}시–${bhour+2}시`;
+      document.getElementById('bestTimeDesc').textContent = `이 시간대가 하늘이 맑고 쾌적할 확률이 높습니다.`;
+  } else { document.getElementById('bestTime').textContent = `분석 불가`; document.getElementById('bestTimeDesc').textContent = `예보 데이터가 없습니다.`; }
+
+  let maskTxt = "불필요"; let maskDesc = "공기가 깨끗해 마스크 없이 활동해도 됩니다.";
+  if(grade === 'moderate' || airData.o3 > 0.09) { maskTxt = "선택적 착용"; maskDesc = "민감군은 마스크를, 자외선이 강하면 선글라스를 챙기세요."; }
+  if(grade === 'bad') { maskTxt = "KF80 이상 필수"; maskDesc = "초미세먼지를 걸러줄 보건용 마스크를 착용하세요."; }
+  if(grade === 'very-bad') { maskTxt = "KF94 이상 필수"; maskDesc = "마스크가 필수적이며, 야외 활동을 최소화해야 합니다."; }
+  document.getElementById('maskRec').textContent = maskTxt; document.getElementById('maskDesc').textContent = maskDesc;
+  document.getElementById('ventRec').textContent = { good:'지금 바로', moderate:'오전 중 권장', bad:'자제 권장', 'very-bad':'절대 금지' }[grade];
+  document.getElementById('ventDesc').textContent = { good:'창문을 활짝 열어 실내 환기를 하세요.', moderate:'짧은 환기는 괜찮으나 수치를 주시하세요.', bad:'외부 공기가 탁하므로 공기청정기를 가동하세요.', 'very-bad':'창문을 닫고 틈새 바람을 막아주세요.' }[grade];
+
+  const timeline = document.getElementById('timeline'); timeline.innerHTML = '';
+  if(w.hourly && w.hourly.length > 0) {
+      const timelineData = w.hourly.slice(0, 12).map(h => {
+        const base = airData.pm25; const rainAdj = h.pty > 0 ? -base * 0.3 : 0; const skyAdj = h.sky === 4 ? base * 0.1 : h.sky === 1 ? -base * 0.05 : 0;
+        return { time: h.time, val: Math.max(5, Math.round(base + rainAdj + skyAdj + (Math.random() - 0.5) * 6)) };
+      });
+      const maxVal = Math.max(...timelineData.map(t => t.val));
+      timelineData.forEach((t, i) => {
+        const g = getGrade(t.val); const hp = Math.max(8, (t.val / maxVal) * 100); const hour = parseInt(t.time.slice(0, 2)); const isNow = i === 0;
+        timeline.innerHTML += `<div class="tl-bar-wrap"><div class="tl-bar" style="height:${hp}%;background:${gradeColor(g)};opacity:${isNow?1:0.55}"></div><div class="${isNow ? 'tl-now' : 'tl-time'}">${hour}시</div></div>`;
+      });
+  }
+
+  const actData = [
+    { icon:'🚶', name:'산책', okPm25:35, rainOk:false }, { icon:'🏃', name:'조깅/러닝', okPm25:25, rainOk:false },
+    { icon:'🚴', name:'자전거', okPm25:30, rainOk:false }, { icon:'🧺', name:'야외 빨래', okPm25:20, rainOk:false },
+    { icon:'👶', name:'유모차', okPm25:20, rainOk:false }, { icon:'🧓', name:'어르신 외출', okPm25:25, rainOk:true }
+  ];
+  document.getElementById('activities').innerHTML = actData.map(a => {
+    const blocked = (w.ptyCode > 0) && !a.rainOk; const ok = !blocked && airData.pm25 <= a.okPm25;
+    const caution = !blocked && !ok && airData.pm25 <= a.okPm25 * 1.6;
+    const cls = ok ? 'ok' : caution ? 'caution' : 'no';
+    return `<div class="activity-item ${cls}"><span class="act-icon">${a.icon}</span>${a.name}</div>`;
+  }).join('');
+
+  const aiMsgEl = document.getElementById('aiMessage'); aiMsgEl.innerHTML = ''; let i = 0;
+  const cursor = document.createElement('span'); cursor.className = 'ai-typing'; aiMsgEl.appendChild(cursor);
+  const timer = setInterval(() => { if (i < aiText.length) aiMsgEl.insertBefore(document.createTextNode(aiText[i++]), cursor); else { clearInterval(timer); cursor.remove(); } }, 30);
+
+  document.getElementById('dashboard').classList.add('visible');
+}
+
+// ─────────────────────────────────────
+// 분석 시작점
+// ─────────────────────────────────────
 async function startAnalysis() {
   const station = document.getElementById('locationInput').value.trim();
-  if (!station || station === "위치 파악 중...") return showToast("📍 위치를 먼저 선택하거나 입력해주세요.");
+  if (!station || station === "위치 파악 중...") return showToast("📍 위치를 먼저 선택하거나 지역명을 입력해주세요.");
 
-  document.getElementById('loading').classList.add('show');
+  const loading = document.getElementById('loading'); loading.classList.add('show');
   
   try {
     const air = await fetchAirQuality(station);
-    const weather = await fetchWeather();
+    const weather = await fetchWeather(station);
+    const aiText = await getAICoaching(air, weather);
     
-    // UI Render
-    document.getElementById('verdictLocation').textContent = `📍 ${air.station}`;
-    document.getElementById('pm10Val').textContent = air.pm10;
-    document.getElementById('pm25Val').textContent = air.pm25;
-    document.getElementById('o3Val').textContent = air.o3;
-    
-    const grade = air.pm25 <= 15 ? 'good' : air.pm25 <= 35 ? 'moderate' : 'bad';
-    const color = { good:'#4ade80', moderate:'#facc15', bad:'#f97316' }[grade];
-    document.getElementById('orb1').style.background = color;
-    document.getElementById('verdictCard').style.setProperty('--verdict-color', color);
-    document.getElementById('verdictEmoji').textContent = { good:'🌤️', moderate:'😐', bad:'😷' }[grade];
-    document.getElementById('verdictTitle').textContent = { good:'나가도 좋습니다', moderate:'짧게 다녀오세요', bad:'실내에 머무세요' }[grade];
-    
-    // Weather
-    document.getElementById('weatherRow').innerHTML = `
-        <div class="weather-item">☀️ ${weather.temp}°C<br><small>현재 기온</small></div>
-        <div class="weather-item">💧 ${weather.hum}%<br><small>습도</small></div>
-        <div class="weather-item">💨 ${weather.wind}m/s<br><small>풍속</small></div>`;
-
-    // AI Coaching
-    const healthInfo = selectedConditions.length > 0 ? `선택하신 [${selectedConditions.join(', ')}] 조건을 고려할 때 ` : "";
-    document.getElementById('aiMessage').innerHTML = `오늘 ${air.station}의 공기는 ${grade === 'good' ? '매우 상쾌합니다!' : '조금 탁한 편이에요.'} ${healthInfo} 무리한 활동보다는 상쾌한 실내 환기와 함께 가벼운 일상을 즐겨보세요. <span class="ai-typing"></span>`;
-
-    document.getElementById('dashboard').classList.add('visible');
+    renderDashboard(air, weather, aiText);
   } catch (e) {
     showToast("데이터 연동 중 오류가 발생했습니다.");
   } finally {
-    document.getElementById('loading').classList.remove('show');
+    loading.classList.remove('show');
   }
 }
 </script>

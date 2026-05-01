@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>숨결 Pro — 프리미엄 외출 가이드</title>
+<title>숨결 Pro — 프리미엄 외출 가이드 및 매거진</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
@@ -82,7 +82,6 @@
   .verdict-card { text-align: center; padding: 48px 24px; border-radius: 32px; position: relative; overflow: hidden; }
   .verdict-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: var(--verdict-color, #4ade80); transition: background 1s; }
   .verdict-location { font-size: 1rem; font-weight: 600; color: var(--accent); background: var(--accent-glow); display: inline-block; padding: 6px 16px; border-radius: 100px; margin-bottom: 16px; }
-  .verdict-emoji { font-size: 3.6rem; margin-bottom: 10px; display: block; }
   .verdict-title { font-family: var(--font-serif); font-size: 2.8rem; margin-bottom: 12px; font-weight: 700; color: #fff; }
   .verdict-sub { color: var(--text-muted); font-size: 1.05rem; }
   
@@ -103,7 +102,7 @@
   .ic-header { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
   .ic-icon { width: 44px; height: 44px; background: rgba(255,255,255,0.05); border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; }
   .ic-title { font-size: 0.9rem; font-weight: 600; color: var(--text-muted); }
-  .ic-value { font-size: 1.5rem; font-family: var(--font-serif); font-weight: 700; color: #fff; margin-bottom: 8px; }
+  .ic-value { font-size: 1.6rem; font-family: var(--font-serif); font-weight: 700; color: #fff; margin-bottom: 8px; }
   .ic-desc { font-size: 0.95rem; color: var(--text-muted); line-height: 1.6; }
 
   /* Timeline & Activities */
@@ -115,7 +114,6 @@
   .tl-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 10px; height: 100%; justify-content: flex-end; }
   .tl-bar { width: 100%; max-width: 32px; border-radius: 6px 6px 2px 2px; transition: height 1s; min-height: 8px; }
   .tl-time { font-size: 0.75rem; color: var(--text-muted); }
-  .tl-time.now { color: var(--accent); font-weight: 700; }
   
   .activities { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; }
   .act-item { padding: 18px 12px; border-radius: 20px; border: 1px solid var(--border); text-align: center; font-size: 0.9rem; font-weight: 600; background: rgba(255,255,255,0.02); }
@@ -124,6 +122,18 @@
   .act-item.caution { border-color: rgba(245, 158, 11, 0.3); color: var(--moderate); background: rgba(245, 158, 11, 0.05); }
   .act-item.no { border-color: rgba(239, 68, 68, 0.15); color: #52525b; text-decoration: line-through; opacity: 0.6; }
 
+  /* 💡 Magazine Section (AdSense SEO) */
+  .magazine-section { margin-top: 80px; padding-top: 40px; border-top: 1px solid var(--border); animation: fadeUp 0.8s both; }
+  .mag-title { font-family: var(--font-serif); font-size: 2rem; color: #fff; margin-bottom: 8px; display: flex; align-items: center; gap: 12px; }
+  .article-card { background: var(--surface); border: 1px solid var(--border); border-radius: 24px; padding: 32px; margin-bottom: 24px; transition: transform 0.3s, border-color 0.3s; }
+  .article-card:hover { border-color: rgba(255,255,255,0.2); transform: translateY(-2px); }
+  .article-category { font-size: 0.75rem; font-weight: 700; color: var(--accent); text-transform: uppercase; margin-bottom: 12px; display: inline-block; padding: 4px 12px; background: var(--accent-glow); border-radius: 100px; }
+  .article-title { font-family: var(--font-serif); font-size: 1.6rem; color: #fff; margin-bottom: 20px; line-height: 1.4; word-break: keep-all; }
+  .article-body { font-size: 1rem; color: var(--text-muted); line-height: 1.8; font-weight: 300; }
+  .article-body h3 { color: #e2e8f0; margin: 24px 0 12px; font-size: 1.2rem; font-family: var(--font-serif); }
+  .article-body p { margin-bottom: 16px; }
+  .article-date { font-size: 0.85rem; color: var(--text-muted); opacity: 0.6; margin-top: 24px; display: block; text-align: right; }
+
   /* Loading & Toast */
   #loading { display: none; position: fixed; inset: 0; background: rgba(9,9,11,0.95); backdrop-filter: blur(20px); z-index: 1000; flex-direction: column; align-items: center; justify-content: center; }
   .loader { width: 44px; height: 44px; border: 3px solid var(--border-light); border-radius: 50%; border-bottom-color: var(--accent); animation: rotation 1s linear infinite; }
@@ -131,13 +141,21 @@
   .toast { position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%) translateY(100px); background: rgba(24, 24, 27, 0.9); border: 1px solid var(--border-light); border-radius: 100px; padding: 12px 24px; color: #fff; z-index: 2000; transition: transform 0.4s, opacity 0.4s; opacity: 0; font-size: 0.9rem; }
   .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
 
-  footer { text-align: center; padding: 40px 20px; color: var(--text-muted); font-size: 0.8rem; opacity: 0.7; }
+  /* Footer (AdSense Requirements) */
+  footer { text-align: center; padding: 60px 20px 40px; border-top: 1px solid var(--border); margin-top: 40px; }
+  .footer-links { display: flex; justify-content: center; gap: 24px; margin-bottom: 20px; flex-wrap: wrap; }
+  .footer-links a { color: var(--text-muted); text-decoration: none; font-size: 0.85rem; transition: color 0.2s; }
+  .footer-links a:hover { color: #fff; }
+  .footer-copy { color: var(--text-muted); font-size: 0.8rem; opacity: 0.6; }
+
   @media (max-width: 640px) {
     .search-wrapper { flex-direction: column; background: transparent; border: none; padding: 0; box-shadow: none; }
     .search-wrapper > div { display: flex; width: 100%; background: rgba(24, 24, 27, 0.8); border: 1px solid var(--border-light); border-radius: 16px; }
     .btn-geo { margin-left: 0; }
     .btn-primary { width: 100%; border-radius: 16px; margin-top: 10px; padding: 16px; }
     .data-grid { grid-template-columns: repeat(2, 1fr); }
+    .article-card { padding: 24px 20px; }
+    .article-title { font-size: 1.4rem; }
   }
 </style>
 </head>
@@ -229,7 +247,7 @@
     </div>
 
     <div class="timeline-wrapper glass">
-      <div class="tl-header"><div class="tl-title">시간대별 대기질 예측</div><div class="tl-source">글로벌 환경 데이터</div></div>
+      <div class="tl-header"><div class="tl-title">시간대별 대기질 예측</div><div class="tl-source">환경 데이터 기반 추산</div></div>
       <div class="timeline" id="timeline"></div>
     </div>
     <div class="timeline-wrapper glass">
@@ -237,9 +255,69 @@
       <div class="activities" id="activities"></div>
     </div>
   </section>
+
+  <section class="magazine-section" id="magazineSection">
+    <h2 class="mag-title">📖 숨결 매거진</h2>
+    <p style="color:var(--text-muted); margin-bottom:32px; font-weight:300;">건강한 일상을 지키기 위한 대기질과 날씨 상식</p>
+
+    <article class="article-card glass">
+      <span class="article-category">환경과 건강</span>
+      <h2 class="article-title">초미세먼지(PM2.5)가 우리 몸에 미치는 치명적인 영향과 대처법</h2>
+      <div class="article-body">
+        <p>현대인의 건강을 위협하는 가장 큰 요소 중 하나는 바로 미세먼지, 그중에서도 '초미세먼지(PM2.5)'입니다. 머리카락 굵기의 1/20에서 1/30에 불과한 이 미세한 입자들은 호흡기를 거쳐 폐포를 통과해 혈관으로 직접 침투할 수 있어 매우 치명적입니다.</p>
+        <h3>1. 초미세먼지의 주요 원인과 구성 성분</h3>
+        <p>초미세먼지는 주로 자동차의 배기가스, 화력발전소, 공장 등에서 화석연료가 연소될 때 발생합니다. 황산염, 질산염, 탄소류, 중금속 등 세계보건기구(WHO)가 지정한 1급 발암물질이 다량 포함되어 있습니다. 일반적인 먼지와 달리 기관지에서 걸러지지 않기 때문에 각별한 주의가 필요합니다.</p>
+        <h3>2. 인체에 미치는 3가지 치명적 질환</h3>
+        <p>첫째, 호흡기 질환입니다. 천식, 만성 폐쇄성 폐질환(COPD)을 악화시킵니다. 둘째, 심혈관 질환입니다. 혈관에 침투하여 염증 반응을 일으키고 뇌졸중, 심근경색의 발병률을 높입니다. 셋째, 뇌 및 인지 기능 저하입니다. 최근 연구에 따르면 초미세먼지가 뇌 신경 세포를 손상시켜 치매 발병 시기를 앞당긴다는 결과도 발표되었습니다.</p>
+        <h3>3. 생활 속 올바른 대처법</h3>
+        <p>미세먼지가 '나쁨' 이상인 날에는 야외 운동을 반드시 피해야 합니다. 부득이하게 외출할 경우, 코와 입에 완전히 밀착되는 식약처 인증 KF80 또는 KF94 보건용 마스크를 착용해야 합니다. 외출 후에는 손발을 깨끗이 씻고, 식염수로 코 안을 세척하는 것이 큰 도움이 됩니다.</p>
+        <span class="article-date">Updated: 2026. 04. 28</span>
+      </div>
+    </article>
+
+    <article class="article-card glass">
+      <span class="article-category">실내 공기 관리</span>
+      <h2 class="article-title">미세먼지 나쁜 날, 실내 환기는 어떻게 해야 할까? (올바른 환기 타이밍)</h2>
+      <div class="article-body">
+        <p>바깥 공기가 뿌옇고 미세먼지 농도가 높은 날, 많은 분들이 창문을 굳게 닫고 하루 종일 공기청정기만 가동합니다. 하지만 전문가들은 "아무리 바깥 공기가 나빠도 최소한의 환기는 필수"라고 입을 모아 강조합니다. 밀폐된 공간에서는 오히려 이산화탄소(CO2), 라돈, 포름알데히드 등 유해 물질이 축적되기 때문입니다.</p>
+        <h3>1. 실내 오염 물질이 더 위험한 이유</h3>
+        <p>요리를 할 때 발생하는 일산화탄소와 초미세먼지, 새 가구에서 나오는 휘발성 유기화합물은 공기청정기만으로는 완벽하게 제거되지 않습니다. 오직 외부의 신선한 공기를 유입시켜 희석하는 '자연 환기'만이 이산화탄소와 라돈 수치를 낮출 수 있는 유일한 방법입니다.</p>
+        <h3>2. 미세먼지 나쁜 날의 환기 요령</h3>
+        <p>대기질이 '매우 나쁨' 수준이 아니라면, 하루 3번, 한 번에 10분 이내로 짧게 환기하는 것이 좋습니다. 환기 타이밍은 대기 흐름이 활발하여 미세먼지가 위로 흩어지는 **낮 시간대(오전 11시 ~ 오후 3시)**가 가장 적합합니다. 이른 아침이나 늦은 밤에는 오염 물질이 지표면으로 가라앉으므로 환기를 피해야 합니다.</p>
+        <h3>3. 공기청정기와 환기의 시너지 효과</h3>
+        <p>환기를 할 때는 맞바람이 치도록 마주 보는 창문을 동시에 열어 짧고 굵게 오염된 공기를 배출하세요. 환기를 마친 직후에는 창문을 닫고 창문 주변에 분무기로 물을 뿌려 먼지를 가라앉힌 뒤 물걸레질을 합니다. 그 후 공기청정기를 강하게 가동하여 유입된 미세먼지를 빠르게 제거하는 것이 가장 완벽한 실내 공기질 관리 루틴입니다.</p>
+        <span class="article-date">Updated: 2026. 04. 30</span>
+      </div>
+    </article>
+
+    <article class="article-card glass">
+      <span class="article-category">계절성 위험</span>
+      <h2 class="article-title">보이지 않는 살인마 '오존(O3)', 자외선보다 위험한 이유와 예방 수칙</h2>
+      <div class="article-body">
+        <p>봄과 여름철, 일기예보에서 미세먼지와 함께 자주 등장하는 불청객이 바로 '오존(Ozone)'입니다. 미세먼지와 달리 오존은 기체 상태이기 때문에 마스크로도 걸러낼 수 없어 우리 몸에 더욱 직접적이고 치명적인 타격을 줍니다.</p>
+        <h3>1. 지표면 오존의 생성 과정</h3>
+        <p>성층권의 오존층은 자외선을 막아주는 이로운 역할을 하지만, 우리가 숨 쉬는 지표면 근처의 오존은 자동차 배기가스(질소산화물)와 공장 매연(휘발성유기화합물)이 강한 햇빛(자외선)과 광화학 반응을 일으켜 생성되는 독성 물질입니다. 따라서 햇빛이 강하고 기온이 높으며 바람이 불지 않는 날 오후에 농도가 가장 높게 치솟습니다.</p>
+        <h3>2. 오존이 인체에 미치는 파괴적인 영향</h3>
+        <p>오존은 강력한 산화력을 가지고 있어 우리 몸의 세포를 파괴합니다. 눈의 점막을 자극하여 안구건조증과 결막염을 유발하며, 호흡기를 손상시켜 기침, 가슴 통증, 천식을 악화시킵니다. 심한 경우 폐 기능을 영구적으로 저하시킬 수 있으므로 노약자와 호흡기 질환자는 특히 주의해야 합니다.</p>
+        <h3>3. 마스크로 못 막는 오존, 유일한 예방법은?</h3>
+        <p>오존 농도가 0.12ppm을 넘어 '주의보'가 발령된 날에는 오후 2시부터 5시 사이의 야외 활동을 피하는 것이 유일한 예방책입니다. 외출이 불가피하다면 직사광선이 내리쬐는 도로변이나 차로를 피하고, 그늘진 곳으로 이동해야 합니다. 또한 피부와 눈을 보호하기 위해 챙이 넓은 모자, 선글라스, 자외선 차단제(선크림)를 반드시 활용하시기 바랍니다.</p>
+        <span class="article-date">Updated: 2026. 05. 01</span>
+      </div>
+    </article>
+  </section>
+
 </main>
 
-<footer><p>숨결 Pro · Premium Air Quality Engine</p></footer>
+<footer>
+  <div class="footer-links">
+    <a href="#" style="font-weight: 700; color: #fff;">서비스 소개</a>
+    <a href="#">이용약관</a>
+    <a href="#" style="font-weight: 700;">개인정보처리방침</a>
+    <a href="#">문의하기</a>
+  </div>
+  <p class="footer-copy">숨결 Pro · 하이브리드 대기질 & 날씨 분석 엔진</p>
+  <p class="footer-copy" style="margin-top: 8px;">Copyright © 2026 Soomgyeol. All rights reserved.</p>
+</footer>
 
 <script>
 // ─────────────────────────────────────
@@ -268,8 +346,8 @@ const SHARE_LINKS = {
   warmer: { text: "야외 운동 시 호흡이 편안하면서도 자외선과 먼지를 막아주는 스포츠 전용 넥워머를 활용해 보세요.", url: "https://toss.im/_m/vBYMH07c" }
 };
 
-let currentLat = 36.4800; let currentLon = 127.2890; // 기본 세종시
-let lastLocation = '세종시';
+let currentLat = 37.5665; let currentLon = 126.9780; // 기본 서울
+let lastLocation = '서울시 중구';
 let selectedConditions = []; 
 
 function toggleChip(el) {
@@ -284,20 +362,24 @@ function showToast(msg) {
 }
 
 // ─────────────────────────────────────
-// 2. 자동 실행 및 위치 분석 엔진
+// 2. 권한 팝업 및 자동 실행 (JS 강제 컷오프 포함)
 // ─────────────────────────────────────
 window.addEventListener('DOMContentLoaded', () => {
-    initAutoScan(true); 
+    initAutoScan(true); // 페이지 접속 시 무조건 권한 체크 및 실행
 });
 
 function requestGPSWithPrompt() {
     if (navigator.permissions) {
         navigator.permissions.query({ name: 'geolocation' }).then(function(result) {
             if (result.state === 'denied') {
-                alert("⚠️ 위치 권한이 차단되어 있습니다.\n\n정확한 동네 날씨와 미세먼지를 분석하려면 브라우저 상단의 [자물쇠 🔒] 아이콘을 눌러 위치 권한을 '허용'으로 변경해주세요.");
-            } else { initAutoScan(true); }
+                alert("⚠️ 위치 권한이 차단되어 있습니다.\n\n정확한 동네 날씨와 미세먼지를 분석하려면 브라우저 설정(자물쇠 아이콘)에서 위치 권한을 '허용'으로 변경해주세요.");
+            } else {
+                initAutoScan(true);
+            }
         });
-    } else { initAutoScan(true); }
+    } else {
+        initAutoScan(true);
+    }
 }
 
 async function initAutoScan(requestPermission = true) {
@@ -307,11 +389,10 @@ async function initAutoScan(requestPermission = true) {
 
     let isResolved = false;
 
-    // 만약 GPS 권한 팝업에서 사용자가 응답하지 않으면 4초 후 기본값 강제 실행
     const fallbackTimer = setTimeout(async () => {
         if(!isResolved) {
             isResolved = true;
-            showToast("위치 파악 지연으로 기본 위치(세종시)를 분석합니다.");
+            showToast("위치 파악 지연으로 기본 위치(서울)로 분석을 시작합니다.");
             await fetchLocationNameAndProcess();
         }
     }, 4000);
@@ -325,7 +406,7 @@ async function initAutoScan(requestPermission = true) {
             },
             async (err) => { 
                 if(isResolved) return; isResolved = true; clearTimeout(fallbackTimer);
-                if(err.code === 1) showToast("⚠️ 위치 권한이 거부되어 기본 위치를 분석합니다.");
+                if(err.code === 1) showToast("⚠️ 위치 권한이 거부되어 기본 위치(서울)를 분석합니다.");
                 await fetchLocationNameAndProcess(); 
             }, 
             { timeout: 3500 }
@@ -347,14 +428,14 @@ async function manualScan() {
 }
 
 // ─────────────────────────────────────
-// 3. 통신 엔진 (안전한 Fetch 적용)
+// 3. 통신 엔진
 // ─────────────────────────────────────
 async function safeFetch(url, timeoutMs = 5000) {
     const controller = new AbortController();
     const id = setTimeout(() => controller.abort(), timeoutMs);
     try {
         const res = await fetch(url, { signal: controller.signal });
-        clearTimeout(id); if(!res.ok) throw new Error("HTTP Error"); return await res.json();
+        clearTimeout(id); if(!res.ok) throw new Error(); return await res.json();
     } catch(e) { clearTimeout(id); throw e; }
 }
 
@@ -366,8 +447,8 @@ async function fetchLocationNameAndProcess() {
     } catch (e) {
         try {
             const bdc = await safeFetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${currentLat}&longitude=${currentLon}&localityLanguage=ko`, 3000);
-            lastLocation = bdc.locality || bdc.city || "세종시";
-        } catch(e) { lastLocation = "세종시"; }
+            lastLocation = bdc.locality || bdc.city || "서울시 중구";
+        } catch(e) { lastLocation = "서울시 중구"; }
     }
     const inputEl = document.getElementById('locationInput');
     if(inputEl) inputEl.value = lastLocation;
@@ -380,7 +461,6 @@ async function processDataOnly(stationName) {
     let air = { pm10: 0, pm25: 0, o3: 0, stationName: stationName };
     let weather = { temp: 0, humidity: 0, windSpeed: 0, ptyCode: 0, skyCode: 1, rainProb: 0, hourly: [] };
 
-    // Vercel 에어코리아 프록시 호출
     try {
         const res = await safeFetch(`/api/air?station=${encodeURIComponent(stationName)}`, 4000);
         if(res.response?.body?.items?.[0]) {
@@ -390,7 +470,6 @@ async function processDataOnly(stationName) {
             air.o3 = parseFloat(item.o3Value) || 0;
         } else throw new Error();
     } catch(e) {
-        // 프록시 실패 시 OWM 글로벌 데이터 백업
         try {
             const aData = await safeFetch(`https://api.openweathermap.org/data/2.5/air_pollution?lat=${currentLat}&lon=${currentLon}&appid=${OWM_API_KEY}`);
             if(aData.list?.[0]?.components) {
@@ -414,7 +493,6 @@ async function processDataOnly(stationName) {
         }
     } catch(e) {}
 
-    // 안전하게 시간 배열 생성 (타임라인용)
     const hour = new Date().getHours();
     weather.hourly = Array.from({length:12}, (_, i) => {
         let h = (hour + i) % 24;
@@ -423,11 +501,10 @@ async function processDataOnly(stationName) {
     });
 
     try {
-        // 모든 렌더링 로직을 완벽하게 보호
         renderDashboard(air, weather);
     } catch(renderErr) {
         console.error(renderErr);
-        showToast("⚠️ 화면을 구성하는 중 오류가 발생했습니다.");
+        showToast("⚠️ 화면 구성 중 오류가 발생했습니다.");
     } finally {
         const loading = document.getElementById('loading');
         if(loading) loading.style.display = 'none';
@@ -435,15 +512,14 @@ async function processDataOnly(stationName) {
 }
 
 // ─────────────────────────────────────
-// 4. 프리미엄 렌더링 (각 섹션별 독립 트라이캐치 적용)
+// 4. 프리미엄 렌더링 (각 섹션별 독립 트라이캐치)
 // ─────────────────────────────────────
-let activeAiTimer = null; // AI 텍스트 겹침 방지용
+let activeAiTimer = null; 
 
 function renderDashboard(air, w) {
     const grade = air.pm25 <= 15 ? 'good' : air.pm25 <= 35 ? 'moderate' : air.pm25 <= 75 ? 'bad' : 'very-bad';
     const color = { good:'#10b981', moderate:'#f59e0b', bad:'#f97316', 'very-bad':'#ef4444' }[grade];
     
-    // 섹션 1: 메인 판정 카드
     try {
         setStyle('orb1', 'background', color);
         setStyle('verdictCard', '--verdict-color', color);
@@ -453,9 +529,7 @@ function renderDashboard(air, w) {
         setTxt('verdictTitle', { good:'나가도 좋습니다', moderate:'짧게 다녀오세요', bad:'실내에 머무세요', 'very-bad':'외출을 자제하세요' }[grade]);
         setTxt('verdictSub', `현재 대기질이 ${{ good:'매우 좋음', moderate:'보통', bad:'나쁨', 'very-bad':'매우 나쁨' }[grade]} 수준입니다. 최적의 행동 요령을 확인하세요.`);
 
-        setTxt('pm10Val', air.pm10); 
-        setTxt('pm25Val', air.pm25); 
-        setTxt('o3Val', air.o3);
+        setTxt('pm10Val', air.pm10); setTxt('pm25Val', air.pm25); setTxt('o3Val', air.o3);
 
         const bColor = (g) => `grade-badge ${{ good:'grade-good', moderate:'grade-moderate', bad:'grade-bad', 'very-bad':'grade-very-bad' }[g]}`;
         const bLabel = (g) => { return { good:'좋음', moderate:'보통', bad:'나쁨', 'very-bad':'매우 나쁨' }[g]; };
@@ -465,9 +539,8 @@ function renderDashboard(air, w) {
         setHtml('pm10Badge', `<div class="${bColor(pm10g)}">${bLabel(pm10g)}</div>`);
         const o3g = air.o3 <= 0.030 ? 'good' : air.o3 <= 0.090 ? 'moderate' : air.o3 <= 0.150 ? 'bad' : 'very-bad'; 
         setHtml('o3Badge', `<div class="${bColor(o3g)}">${bLabel(o3g)}</div>`);
-    } catch(e) { console.error("메인 카드 오류", e); }
+    } catch(e) { console.error(e); }
 
-    // 섹션 2: 날씨 요약
     try {
         const skyIcons = ['', '☀️', '', '⛅', '☁️']; const ptyIcons = ['', '🌧️', '🌨️', '❄️', '⛈️'];
         const icon = w.ptyCode > 0 ? ptyIcons[1] : (skyIcons[w.skyCode] || '☀️');
@@ -476,9 +549,8 @@ function renderDashboard(air, w) {
           <div class="data-item"><div class="data-lbl">습도</div><div class="data-val">${w.humidity}%</div><div style="font-size:1.4rem; margin-top:4px;">💧</div></div>
           <div class="data-item"><div class="data-lbl">풍속</div><div class="data-val">${w.windSpeed}</div><div style="font-size:0.8rem; color:var(--text-muted); margin-top:4px;">m/s</div></div>
           <div class="data-item"><div class="data-lbl">강수</div><div class="data-val">${w.rainProb}%</div><div style="font-size:1.4rem; margin-top:4px;">🌂</div></div>`);
-    } catch(e) { console.error("날씨 요약 오류", e); }
+    } catch(e) { console.error(e); }
 
-    // 섹션 3: 풍부한 해설 (복구 완료)
     try {
         setTxt('bestTime', "11:00 - 15:00");
         setTxt('bestTimeDesc', "하루 중 대기 순환이 가장 원활하여 미세먼지 농도가 낮아질 확률이 높은 시간대입니다.");
@@ -488,9 +560,8 @@ function renderDashboard(air, w) {
         
         setHtml('ventRec', air.pm25 > 75 ? "<span style='color:var(--very-bad)'>환기 절대 자제</span>" : "<span style='color:var(--good)'>지금 환기 가능</span>");
         setTxt('ventDesc', air.pm25 > 75 ? "외부 공기가 매우 탁합니다. 창문을 닫고 실내 공기청정기를 가동하여 공기 질을 안전하게 관리하세요." : "창문을 활짝 열어 맞바람이 치도록 실내 공기를 10분 이상 깨끗하게 순환시키세요.");
-    } catch(e) { console.error("해설 오류", e); }
+    } catch(e) { console.error(e); }
 
-    // 섹션 4: 타임라인
     try {
         let timelineHTML = '';
         if(w.hourly && w.hourly.length > 0) {
@@ -503,9 +574,8 @@ function renderDashboard(air, w) {
             });
         }
         setHtml('timeline', timelineHTML);
-    } catch(e) { console.error("타임라인 오류", e); }
+    } catch(e) { console.error(e); }
 
-    // 섹션 5: 활동 가능 여부
     try {
         const actData = [
           { icon:'🚶', name:'가벼운 산책', okPm25:35, rainOk:false }, { icon:'🏃', name:'조깅 및 러닝', okPm25:25, rainOk:false },
@@ -520,9 +590,8 @@ function renderDashboard(air, w) {
           return `<div class="act-item ${cls}"><span class="act-icon">${a.icon}</span>${a.name}</div>`;
         }).join('');
         setHtml('activities', activitiesHTML);
-    } catch(e) { console.error("활동 오류", e); }
+    } catch(e) { console.error(e); }
 
-    // 섹션 6: AI 텍스트 및 토스 스텔스 링크 (복구 완료)
     try {
         let baseMsg = "가벼운 산책이나 야외 활동을 즐기기에 완벽하고 상쾌한 날씨예요!";
         if (air.pm25 > 35) baseMsg = "바깥 공기가 조금 탁하네요. 기관지 보호를 위해 외출하실 때 꼭 마스크를 챙겨주세요.";
@@ -541,7 +610,6 @@ function renderDashboard(air, w) {
             }, 35);
         }
 
-        // 토스 링크 스텔스 매칭
         const tipBox = document.getElementById('stealthTipBox');
         if(tipBox) {
             let rec = null;
@@ -559,7 +627,7 @@ function renderDashboard(air, w) {
                 tipBox.style.display = 'block';
             } else { tipBox.style.display = 'none'; }
         }
-    } catch(e) { console.error("AI 텍스트 오류", e); }
+    } catch(e) { console.error(e); }
 
     const dashboard = document.getElementById('dashboard');
     if(dashboard) dashboard.classList.add('visible');

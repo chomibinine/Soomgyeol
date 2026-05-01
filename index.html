@@ -438,13 +438,13 @@ async function getGPSLocation() {
         currentLon = pos.coords.longitude;
         
         try {
-            // BigDataCloud Reverse Geocoding (Client API, CORS Free)
+            // BigDataCloud Reverse Geocoding
             const bdcUrl = `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${currentLat}&longitude=${currentLon}&localityLanguage=ko`;
             const res = await fetch(bdcUrl);
             if (!res.ok) throw new Error("BDC Network Error");
             const data = await res.json();
             
-            // 파싱 최우선 순위: locality(동/구) -> city(시) -> principalSubdivision(도) -> fallback
+            // 파싱 최우선 순위
             let addr = data.locality || data.city || data.principalSubdivision || "현재 위치";
             document.getElementById('locationInput').value = addr; 
             startAnalysis();
@@ -476,20 +476,29 @@ async function fetchAirQuality(stationName) {
     const url = `/api/air?station=${encodeURIComponent(stationName)}`;
     const res = await fetch(url);
     if (!res.ok) throw new Error('Network Error');
-    const json = await res.json(); const item = json?.response?.body?.items?.[0];
+    const json = await res.json(); 
+    const item = json?.response?.body?.items?.[0];
     if (!item) throw new Error('측정소 데이터 없음');
     setApiTag('apiAir', 'ok', `✓ 에어코리아 (${stationName})`); 
     return {
       pm10: Math.round(parseFloat(item.pm10Value)) || null,
       pm25: Math.round(parseFloat(item.pm25Value)) || null,
       o3: parseFloat(item.o3Value) || 0,
-      dataTime: item.dataTime, stationName: stationName
+      dataTime: item.dataTime, 
+      stationName: stationName
     };
   } catch (e) {
     setApiTag('apiAir', 'err', `⚠ 글로벌 대기질 자동 전환`);
     const res = await fetch(`https://api.openweathermap.org/data/2.5/air_pollution?lat=${currentLat}&lon=${currentLon}&appid=${OWM_API_KEY}`);
-    const data = await res.json(); const pm = data.list[0].components;
-    return { pm10: Math.round(pm.pm10), pm25: Math.round(pm.pm2_5), o3: pm.o3 ? (pm.o3/1000).toFixed(3) : 0, dataTime: new Date().toLocaleTimeString(), stationName: stationName };
+    const data = await res.json(); 
+    const pm = data.list?.[0]?.components || { pm10: 0, pm2_5: 0, o3: 0 };
+    return { 
+        pm10: Math.round(pm.pm10), 
+        pm25: Math.round(pm.pm2_5), 
+        o3: pm.o3 ? (pm.o3/1000).toFixed(3) : 0, 
+        dataTime: new Date().toLocaleTimeString(), 
+        stationName: stationName 
+    };
   }
 }
 
@@ -509,7 +518,8 @@ async function fetchWeather(stationName) {
     const url = `/api/weather?nx=${grid.nx}&ny=${grid.ny}&base_date=${baseDate}&base_time=${baseTime}`;
     const res = await fetch(url);
     if (!res.ok) throw new Error('CORS Error');
-    const json = await res.json(); const items = json?.response?.body?.items?.item;
+    const json = await res.json(); 
+    const items = json?.response?.body?.items?.item;
     if (!items) throw new Error('기상청 데이터 없음');
 
     const parsed = {};
@@ -523,19 +533,35 @@ async function fetchWeather(stationName) {
       tmp: Math.round(parseFloat(parsed[k].TMP)) || null, pop: parseInt(parsed[k].POP) || 0,
     }));
     setApiTag('apiWeather', 'ok', '✓ 기상청 단기예보');
-    return { skyCode: parseInt(cur.SKY) || 1, ptyCode: parseInt(cur.PTY) || 0, temp: Math.round(parseFloat(cur.TMP)) || null, humidity: Math.round(parseInt(cur.REH)) || null, windSpeed: parseFloat(cur.WSD) || null, rainProb: parseInt(cur.POP) || 0, hourly };
+    return { skyCode: parseInt(cur.SKY) || 1, ptyCode: parseInt(cur.PTY) || 0, temp: Math.round(parseFloat(cur.TMP)) || 0, humidity: Math.round(parseInt(cur.REH)) || 0, windSpeed: parseFloat(cur.WSD) || 0, rainProb: parseInt(cur.POP) || 0, hourly };
   } catch (e) {
     setApiTag('apiWeather', 'err', '⚠ 글로벌 기상 자동 전환');
     const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${currentLat}&lon=${currentLon}&appid=${OWM_API_KEY}&units=metric`);
     const data = await res.json();
     const hour = new Date().getHours();
-    const hourly = Array.from({length:12}, (_, i) => ({ time: String((hour + i) % 24).padStart(2,'0') + '00', sky: data.clouds?.all > 50 ? 4 : 1, pty: data.weather[0].main.includes("Rain") ? 1 : 0, tmp: Math.round(data.main.temp), pop: data.clouds?.all || 0 }));
-    return { skyCode: data.clouds?.all > 50 ? 4 : 1, ptyCode: data.weather[0].main.includes("Rain") ? 1 : 0, temp: Math.round(data.main.temp), humidity: Math.round(data.main.humidity), windSpeed: Math.round(data.wind?.speed || 0), rainProb: 0, hourly };
+    
+    const weatherMain = data.weather?.[0]?.main || "";
+    const hourly = Array.from({length:12}, (_, i) => ({ 
+        time: String((hour + i) % 24).padStart(2,'0') + '00', 
+        sky: data.clouds?.all > 50 ? 4 : 1, 
+        pty: weatherMain.includes("Rain") ? 1 : 0, 
+        tmp: Math.round(data.main?.temp || 0), 
+        pop: data.clouds?.all || 0 
+    }));
+    return { 
+        skyCode: data.clouds?.all > 50 ? 4 : 1, 
+        ptyCode: weatherMain.includes("Rain") ? 1 : 0, 
+        temp: Math.round(data.main?.temp || 0), 
+        humidity: Math.round(data.main?.humidity || 0), 
+        windSpeed: Math.round(data.wind?.speed || 0), 
+        rainProb: 0, 
+        hourly 
+    };
   }
 }
 
 // ─────────────────────────────────────
-// AI 감성 코칭 
+// AI 감성 코칭
 // ─────────────────────────────────────
 async function getAICoaching(airData, weatherData) {
   const pm25 = airData.pm25;
@@ -656,36 +682,42 @@ function renderDashboard(airData, weatherData, aiText) {
 }
 
 // ─────────────────────────────────────
-// MAIN
+// MAIN: 무적의 에러 방패 (try-catch-finally)
 // ─────────────────────────────────────
 async function startAnalysis() {
   const station = document.getElementById('locationInput').value.trim();
   if (!station || station === "위치 파악 중...") return showToast("📍 위치를 먼저 선택하거나 지역명을 입력해주세요.");
   
-  const loading = document.getElementById('loading'); loading.classList.add('show');
+  const loading = document.getElementById('loading'); 
+  loading.classList.add('show');
   ['step1','step2','step3'].forEach(id => { document.getElementById(id).className = 'loading-step'; });
   document.getElementById('apiStatusBar').classList.add('visible');
 
-  let airData, weatherData, aiText;
+  try {
+      document.getElementById('step1').classList.add('active');
+      document.getElementById('step1').textContent = "📡 에어코리아 대기질 분석 중...";
+      let airData = await fetchAirQuality(station);
+      document.getElementById('step1').className = 'loading-step done';
 
-  document.getElementById('step1').classList.add('active');
-  document.getElementById('step1').textContent = "📡 에어코리아 대기질 분석 중...";
-  airData = await fetchAirQuality(station);
-  document.getElementById('step1').className = 'loading-step done';
+      document.getElementById('step2').classList.add('active');
+      document.getElementById('step2').textContent = "🌤 기상청 기온 및 오존 분석 중...";
+      let weatherData = await fetchWeather(station);
+      document.getElementById('step2').className = 'loading-step done';
 
-  document.getElementById('step2').classList.add('active');
-  document.getElementById('step2').textContent = "🌤 기상청 기온 및 오존 분석 중...";
-  weatherData = await fetchWeather(station);
-  document.getElementById('step2').className = 'loading-step done';
+      document.getElementById('step3').classList.add('active');
+      document.getElementById('step3').textContent = "🤖 맞춤형 감성 코칭 생성 중...";
+      setApiTag('apiAI', 'ok', '✓ AI 코칭 완료');
+      let aiText = await getAICoaching(airData, weatherData);
+      document.getElementById('step3').className = 'loading-step done';
 
-  document.getElementById('step3').classList.add('active');
-  document.getElementById('step3').textContent = "🤖 맞춤형 감성 코칭 생성 중...";
-  setApiTag('apiAI', 'ok', '✓ AI 코칭 완료');
-  aiText = await getAICoaching(airData, weatherData);
-  document.getElementById('step3').className = 'loading-step done';
-
-  loading.classList.remove('show');
-  renderDashboard(airData, weatherData, aiText);
+      renderDashboard(airData, weatherData, aiText);
+  } catch (error) {
+      console.error("분석 중 치명적 오류:", error);
+      showToast("데이터 연동 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
+  } finally {
+      // ✅ 어떠한 에러가 발생하더라도 무조건 로딩창을 끄는 핵심 로직
+      loading.classList.remove('show');
+  }
 }
 
 document.getElementById('locationInput').addEventListener('keydown', e => { if (e.key === 'Enter') startAnalysis(); });

@@ -240,6 +240,16 @@
 
 <script>
 // ─────────────────────────────────────
+// 0. 최후의 무한 로딩 방어막 (전역 에러 핸들러)
+// ─────────────────────────────────────
+window.addEventListener('error', function() {
+    document.getElementById('loading').style.display = 'none';
+});
+window.addEventListener('unhandledrejection', function() {
+    document.getElementById('loading').style.display = 'none';
+});
+
+// ─────────────────────────────────────
 // 1. 설정 및 토스 쉐어링크 DB
 // ─────────────────────────────────────
 const VWORLD_API_KEY = "5B0D3660-9AA8-3DEC-BDB4-BE8463D07762"; 
@@ -269,27 +279,12 @@ function showToast(msg) {
 }
 
 // ─────────────────────────────────────
-// 2. 권한 팝업 및 자동 실행 로직
+// 2. 권한 팝업 및 자동 실행 (JS 강제 컷오프 포함)
 // ─────────────────────────────────────
 window.addEventListener('DOMContentLoaded', () => {
-    if (navigator.permissions) {
-        navigator.permissions.query({ name: 'geolocation' }).then(function(result) {
-            if (result.state === 'granted') {
-                initAutoScan(false); // 팝업 없이 바로 진행
-            } else if (result.state === 'prompt') {
-                initAutoScan(true);  // 권한 묻기 진행
-            } else {
-                // 이미 거절된 상태: 확실하게 팝업으로 안내
-                alert("⚠️ 위치 권한이 차단되어 있습니다.\n\n정확한 내 동네 날씨와 미세먼지를 분석하려면\n주소창 옆의 [자물쇠 🔒] 아이콘을 눌러\n위치 권한을 '허용'으로 변경 후 새로고침 해주세요!\n\n(현재는 기본 위치인 세종시로 안내해 드립니다.)");
-                initAutoScan(false); // 세종시로 진행
-            }
-        });
-    } else {
-        initAutoScan(true);
-    }
+    initAutoScan(true); // 페이지 열자마자 자동 실행
 });
 
-// 사용자가 내 위치 버튼(📍)을 눌렀을 때도 동일하게 검사
 function requestGPSWithPrompt() {
     if (navigator.permissions) {
         navigator.permissions.query({ name: 'geolocation' }).then(function(result) {
@@ -310,21 +305,42 @@ async function initAutoScan(requestPermission = true) {
     loading.style.display = 'flex';
     loadingText.textContent = "현재 위치를 파악하고 있습니다...";
 
+    let isGeoResolved = false;
+
+    // 브라우저가 GPS 권한 묻다가 얼어버리는 현상을 막기 위한 4초 타이머
+    const fallbackTimer = setTimeout(async () => {
+        if(!isGeoResolved) {
+            isGeoResolved = true;
+            showToast("위치 파악 지연으로 기본 위치(세종시)로 시작합니다.");
+            await fetchLocationNameAndProcess();
+        }
+    }, 4000);
+
     if (requestPermission && navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
             async (pos) => { 
-                currentLat = pos.coords.latitude; currentLon = pos.coords.longitude; 
+                if(isGeoResolved) return;
+                isGeoResolved = true;
+                clearTimeout(fallbackTimer);
+                currentLat = pos.coords.latitude; 
+                currentLon = pos.coords.longitude; 
                 await fetchLocationNameAndProcess(); 
             },
             async (err) => { 
-                if(err.code === 1) { // 사용자가 방금 거절을 누른 경우
+                if(isGeoResolved) return;
+                isGeoResolved = true;
+                clearTimeout(fallbackTimer);
+                if(err.code === 1) { 
                     alert("⚠️ 위치 권한이 방금 거부되었습니다.\n\n정확한 내 동네 날씨와 미세먼지를 분석하려면\n주소창 옆의 [자물쇠 🔒] 아이콘을 눌러\n위치 권한을 '허용'으로 변경해 주세요.");
                 }
                 await fetchLocationNameAndProcess(); 
             }, 
-            { timeout: 5000 }
+            { timeout: 3500 }
         );
     } else {
+        if(isGeoResolved) return;
+        isGeoResolved = true;
+        clearTimeout(fallbackTimer);
         await fetchLocationNameAndProcess();
     }
 }
@@ -387,8 +403,13 @@ async function processDataOnly(stationName) {
         weather.hourly = Array.from({length:12}, (_, i) => ({ time: String((hour + i) % 24).padStart(2,'0') + '00', val: Math.max(5, air.pm25 + Math.round((Math.random()-0.5)*12)) }));
     } catch(e) {}
 
-    renderDashboard(air, weather);
-    loading.style.display = 'none';
+    try {
+        renderDashboard(air, weather);
+    } catch(renderErr) {
+        showToast("⚠️ 화면 구성 중 오류가 발생했습니다.");
+    } finally {
+        loading.style.display = 'none';
+    }
 }
 
 // ─────────────────────────────────────

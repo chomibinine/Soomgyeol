@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>숨결 Pro — 스마트 외출 가이드</title>
+    <title>숨결 Pro — 하이퍼 로컬 외출 가이드</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
     <style>
@@ -15,7 +15,6 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { background: var(--bg); color: var(--text); font-family: 'Noto Sans KR', sans-serif; min-height: 100vh; overflow-x: hidden; }
         
-        /* Orb Animation */
         .bg-orb { position: fixed; border-radius: 50%; filter: blur(130px); opacity: 0.12; pointer-events: none; transition: background 2s ease; z-index: 0; }
         .orb1 { width: 700px; height: 700px; top: -250px; left: -200px; background: var(--accent); }
         .orb2 { width: 450px; height: 450px; bottom: 50px; right: -150px; background: #818cf8; }
@@ -33,9 +32,7 @@
         .search-container input { flex: 1; background: transparent; border: none; padding: 12px 20px; color: var(--text); font-size: 1rem; outline: none; }
         .btn-geo { background: rgba(56,189,248,0.1); border: 1px solid var(--accent); color: var(--accent); border-radius: 14px; padding: 0 15px; cursor: pointer; font-size: 0.8rem; white-space: nowrap; }
         .btn-main { background: var(--accent); color: #0a0e1a; border: none; border-radius: 14px; padding: 12px 25px; font-weight: 700; cursor: pointer; transition: transform 0.2s; white-space: nowrap; }
-        .btn-main:active { transform: scale(0.96); }
 
-        /* Dashboard Components */
         .dashboard { display: none; grid-template-columns: 1.5fr 1fr; gap: 20px; animation: fadeIn 0.8s ease forwards; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         
@@ -51,10 +48,8 @@
         .stat-val { font-size: 1.8rem; font-family: 'Gowun Batang', serif; display: block; }
         .stat-lbl { font-size: 0.75rem; color: var(--muted); margin-top: 5px; }
 
-        /* Loading */
         #loading { display: none; position: fixed; inset: 0; background: rgba(10,14,26,0.9); z-index: 1000; align-items: center; justify-content: center; flex-direction: column; }
         .spinner { width: 50px; height: 50px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 20px; }
-        @keyframes spin { to { transform: rotate(360deg); } }
 
         @media (max-width: 850px) { .dashboard { grid-template-columns: 1fr; } }
     </style>
@@ -66,7 +61,7 @@
 
 <div id="loading">
     <div class="spinner"></div>
-    <p id="loadingText" style="font-family:'Gowun Batang';">실시간 데이터를 수집하는 중...</p>
+    <p id="loadingText" style="font-family:'Gowun Batang';">위치 정보를 분석 중입니다...</p>
 </div>
 
 <header>
@@ -87,11 +82,11 @@
     <div class="dashboard" id="dashboard">
         <div class="card full-width" style="border-color: var(--accent);">
             <div id="apiSourceTag" style="display: inline-block; padding: 4px 10px; background: rgba(56,189,248,0.1); color: var(--accent); border-radius: 10px; font-size: 0.7rem; margin-bottom: 12px; letter-spacing: 0.05em;">AI 분석 리포트</div>
-            <div id="aiMsg" class="ai-message">분석 데이터를 기다리는 중입니다...</div>
+            <div id="aiMsg" class="ai-message">데이터를 수집하고 있습니다...</div>
         </div>
 
         <div class="card">
-            <h2 id="verdictTitle" style="font-family:'Gowun Batang'; margin-bottom: 20px;">측정소 정보</h2>
+            <h2 id="verdictTitle" style="font-family:'Gowun Batang'; margin-bottom: 20px;">지역 정보</h2>
             <div class="stat-grid">
                 <div class="stat-item">
                     <span class="stat-val" id="pm25Val">—</span>
@@ -106,8 +101,7 @@
 
         <div class="card">
             <h2 style="font-family:'Gowun Batang'; margin-bottom: 20px;">기상 디테일</h2>
-            <div id="weatherInfo" style="line-height: 2;">
-                </div>
+            <div id="weatherInfo" style="line-height: 2;"></div>
         </div>
     </div>
 </main>
@@ -115,193 +109,146 @@
 <script>
 /**
  * ──────────────────────────────────────────────────────────────────────────
- * CONFIG: OWM API 키를 입력해주세요. 공공데이터 키는 api 폴더의 백엔드 파일에 넣습니다.
+ * CONFIG: API 키 설정
  * ──────────────────────────────────────────────────────────────────────────
  */
-const OWM_API_KEY = "68be8e3e30b8d79dca72993923055020"; 
-; // 반드시 실제 키로 변경하세요!
+// ⬇️ 사주 앱에서 쓰셨던 브이월드 키를 여기에 붙여넣어 주세요!
+const VWORLD_API_KEY = "여기에_사주앱에서_쓰신_브이월드_키를_넣어주세요"; 
+const OWM_API_KEY = "68be8e3e30b8d79dca72993923055020";
 
-let currentLat = 37.5665; // 기본 위도 (서울 시청)
-let currentLon = 126.9780; // 기본 경도 (서울 시청)
+let currentLat = 36.4800; // 세종특별자치시 기본 위도
+let currentLon = 127.2890; // 세종특별자치시 기본 경도
 
 // Enter 키로 검색 실행
 document.getElementById('stationInput').addEventListener('keypress', function (e) {
     if (e.key === 'Enter') startAnalysis();
 });
 
-// GPS 위치 가져오기
-function getGPSLocation() {
-    if (!navigator.geolocation) return alert("GPS를 지원하지 않는 브라우저입니다.");
+// GPS 위치 -> 브이월드 주소 변환 -> 대기질 분석
+async function getGPSLocation() {
+    if (!navigator.geolocation) return alert("GPS를 지원하지 않습니다.");
     
     document.getElementById('loading').style.display = 'flex';
-    document.getElementById('loadingText').textContent = "위치 확인 중...";
+    document.getElementById('loadingText').textContent = "현 위치 좌표 스캔 중...";
     
-    navigator.geolocation.getCurrentPosition((pos) => {
+    navigator.geolocation.getCurrentPosition(async (pos) => {
         currentLat = pos.coords.latitude;
         currentLon = pos.coords.longitude;
         
-        // 예시용 동네 이름 할당
-        document.getElementById('stationInput').value = "현재 위치"; 
-        startAnalysis();
+        try {
+            // [브이월드 API] 좌표를 행정구역 명칭으로 변환
+            const vworldUrl = `https://api.vworld.kr/req/address?service=address&request=getAddress&version=2.0&crs=epsg:4326&point=${currentLon},${currentLat}&format=json&type=both&zipcode=false&simple=false&key=${VWORLD_API_KEY}`;
+            const res = await fetch(vworldUrl);
+            const data = await res.json();
+            
+            let addr = "세종특별자치시"; // 기본값
+            if(data.response?.status === "OK") {
+                const result = data.response.result[0].structure;
+                // '도담동' 혹은 '세종특별자치시' 등 가장 적합한 이름 추출
+                addr = result.level4L || result.level2 || "현재 위치";
+            }
+            document.getElementById('stationInput').value = addr;
+            startAnalysis();
+        } catch (e) {
+            console.error("브이월드 호출 실패", e);
+            document.getElementById('stationInput').value = "현재 위치";
+            startAnalysis();
+        }
     }, () => {
         alert("위치 권한을 허용해주세요.");
         document.getElementById('loading').style.display = 'none';
     });
 }
 
-// 기상청 API용 기준 시간(base_time) 계산 함수
-function getKmaBaseDateTime() {
-    const now = new Date();
-    let year = now.getFullYear();
-    let month = now.getMonth() + 1;
-    let date = now.getDate();
-    let hours = now.getHours();
-
-    const baseHours = [2, 5, 8, 11, 14, 17, 20, 23];
-    let targetHour = baseHours.reverse().find(h => h <= hours);
-
-    if (targetHour === undefined) {
-        now.setDate(now.getDate() - 1);
-        year = now.getFullYear();
-        month = now.getMonth() + 1;
-        date = now.getDate();
-        targetHour = 23;
-    }
-
-    const pad = (n) => String(n).padStart(2, '0');
-    return { baseDate: `${year}${pad(month)}${pad(date)}`, baseTime: `${pad(targetHour)}00` };
-}
-
-// 대기질 가져오기 (Main: 공공데이터 -> Fallback: OWM)
 async function fetchAirQuality(station) {
     try {
+        // [Main] Vercel Backend -> AirKorea 호출
         const res = await fetch(`/api/air?station=${encodeURIComponent(station)}`);
-        if (!res.ok) throw new Error("서버 에러");
         const data = await res.json();
-        
-        if (data.response?.header?.resultCode !== "00") throw new Error("데이터 오류");
+        if (data.response?.header?.resultCode !== "00") throw new Error("API Syncing...");
         
         const item = data.response.body.items[0];
         return {
-            source: "한국환경공단 에어코리아",
+            source: "에어코리아 실시간 데이터",
             stationName: item.stationName,
-            pm25Value: item.pm25Value,
-            pm10Value: item.pm10Value,
-            o3Value: item.o3Value,
-            dataTime: item.dataTime
+            pm25: item.pm25Value,
+            pm10: item.pm10Value,
+            o3: item.o3Value,
+            time: item.dataTime
         };
     } catch (err) {
-        console.warn("에어코리아 호출 실패, OpenWeatherMap으로 대체합니다.", err);
-        const url = `https://api.openweathermap.org/data/2.5/air_pollution?lat=${currentLat}&lon=${currentLon}&appid=${OWM_API_KEY}`;
-        const res = await fetch(url);
+        // [Fallback] OpenWeatherMap 호출
+        console.warn("에어코리아 지연, 글로벌 데이터로 전환합니다.");
+        const res = await fetch(`https://api.openweathermap.org/data/2.5/air_pollution?lat=${currentLat}&lon=${currentLon}&appid=${OWM_API_KEY}`);
         const data = await res.json();
-        const pm = data.list[0].components;
-        
+        const comp = data.list[0].components;
         return {
-            source: "OpenWeatherMap 글로벌 데이터",
-            stationName: station === "현재 위치" ? "현재 위치" : station + " (글로벌 예측)",
-            pm25Value: pm.pm2_5,
-            pm10Value: pm.pm10,
-            o3Value: pm.o3 || "-",
-            dataTime: new Date().toLocaleTimeString()
+            source: "글로벌 대기질 예측 모델",
+            stationName: station + " (예측)",
+            pm25: comp.pm2_5,
+            pm10: comp.pm10,
+            o3: comp.o3 || "-",
+            time: new Date().toLocaleTimeString()
         };
     }
 }
 
-// 날씨 가져오기 (Main: 공공데이터 -> Fallback: OWM)
 async function fetchWeather() {
     try {
-        // 좌표 변환 간략화를 위해 임시 고정 격자 사용 (종로구)
-        const { baseDate, baseTime } = getKmaBaseDateTime();
-        const res = await fetch(`/api/weather?nx=60&ny=127&base_date=${baseDate}&base_time=${baseTime}`);
-        if (!res.ok) throw new Error("서버 에러");
+        const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${currentLat}&lon=${currentLon}&appid=${OWM_API_KEY}&units=metric`);
         const data = await res.json();
-        
-        if (data.response?.header?.resultCode !== "00") throw new Error("데이터 오류");
-        return data.response.body.items.item;
-    } catch (err) {
-        console.warn("기상청 호출 실패, OpenWeatherMap으로 대체합니다.", err);
-        const url = `https://api.openweathermap.org/data/2.5/weather?lat=${currentLat}&lon=${currentLon}&appid=${OWM_API_KEY}&units=metric`;
-        const res = await fetch(url);
-        const data = await res.json();
-        
-        return [
-            { category: 'TMP', fcstValue: data.main.temp },
-            { category: 'REH', fcstValue: data.main.humidity }
-        ];
+        return { temp: data.main.temp, humidity: data.main.humidity };
+    } catch (e) {
+        return { temp: "-", humidity: "-" };
     }
 }
 
 async function startAnalysis() {
-    const station = document.getElementById('stationInput').value.trim();
-    if (!station) return alert("측정소 또는 지역명을 입력하세요.");
-
+    const station = document.getElementById('stationInput').value;
     const loading = document.getElementById('loading');
     loading.style.display = 'flex';
-    document.getElementById('loadingText').textContent = "실시간 데이터를 수집하는 중...";
+    document.getElementById('loadingText').textContent = `${station} 대기 환경 분석 중...`;
 
     try {
         const air = await fetchAirQuality(station);
         const weather = await fetchWeather();
-        
-        renderData(air, weather);
-        await renderAI(air, weather);
-
-    } catch (err) {
-        console.error(err);
-        alert("데이터를 가져오는 데 실패했습니다. 네트워크 상태를 확인해주세요.");
+        renderDashboard(air, weather);
+    } catch (e) {
+        alert("데이터 수집 중 오류가 발생했습니다.");
     } finally {
         loading.style.display = 'none';
-        document.getElementById('dashboard').style.display = 'grid';
     }
 }
 
-function renderData(air, weather) {
-    const pm25 = parseFloat(air.pm25Value) || 0;
-    const pm10 = parseFloat(air.pm10Value) || 0;
-    const temp = weather.find(i => i.category === 'TMP')?.fcstValue || "-";
-    const reh = weather.find(i => i.category === 'REH')?.fcstValue || "-";
-
-    document.getElementById('pm25Val').textContent = `${pm25}㎍/㎥`;
-    document.getElementById('tempVal').textContent = `${temp}°C`;
+function renderDashboard(air, weather) {
+    document.getElementById('dashboard').style.display = 'grid';
+    document.getElementById('pm25Val').textContent = `${air.pm25}㎍/㎥`;
+    document.getElementById('tempVal').textContent = `${weather.temp}°C`;
     document.getElementById('verdictTitle').textContent = air.stationName;
     document.getElementById('apiSourceTag').textContent = `AI 분석 리포트 (기반: ${air.source})`;
     
     document.getElementById('weatherInfo').innerHTML = `
-        • 미세먼지(PM10): ${pm10}㎍/㎥ <br>
-        • 습도: ${reh}% <br>
-        • 오존: ${air.o3Value || "-"}ppm <br>
-        • 데이터 기준: ${air.dataTime || new Date().toLocaleTimeString()}
+        • 미세먼지(PM10): ${air.pm10}㎍/㎥ <br>
+        • 습도: ${weather.humidity}% <br>
+        • 오존: ${air.o3}ppm <br>
+        • 측정 시각: ${air.time}
     `;
 
-    const color = pm25 <= 15 ? '#4ade80' : pm25 <= 35 ? '#facc15' : '#f97316';
+    const color = air.pm25 <= 15 ? '#4ade80' : air.pm25 <= 35 ? '#facc15' : '#f97316';
     document.getElementById('orb1').style.background = color;
     document.getElementById('pm25Val').style.color = color;
-}
 
-async function renderAI(air, weather) {
+    // AI 코칭 타이핑 효과
     const aiMsgEl = document.getElementById('aiMsg');
-    aiMsgEl.classList.add('ai-typing');
-    aiMsgEl.textContent = "AI가 오늘의 공기를 분석하고 있습니다...";
-
-    const pm25 = parseFloat(air.pm25Value) || 0;
-    const temp = weather.find(i => i.category === 'TMP')?.fcstValue || "-";
-    
-    let advice = "야외 활동을 즐기기에 좋은 날씨입니다.";
-    if (pm25 > 35) advice = "외출 시 KF80 이상의 마스크 착용을 권장하며, 무리한 실외 활동은 자제하세요.";
-    if (pm25 > 75) advice = "대기질이 매우 좋지 않습니다. 가급적 외출을 삼가고 실내에 머무르세요.";
-
-    const mockResponse = `현재 ${air.stationName}의 초미세먼지는 ${air.pm25Value}㎍/㎥입니다. 현재 기온은 ${temp}°C 이며, ${advice}`;
+    const advice = air.pm25 > 35 ? "외출 시 마스크 착용이 필수적입니다." : "산책하기에 아주 쾌적한 공기 상태입니다.";
+    const text = `현재 ${air.stationName}의 기온은 ${weather.temp}°C이며, 초미세먼지 농도는 ${air.pm25}㎍/㎥로 확인됩니다. ${advice}`;
     
     let i = 0;
     aiMsgEl.textContent = "";
+    aiMsgEl.classList.add('ai-typing');
     const timer = setInterval(() => {
-        if (i < mockResponse.length) {
-            aiMsgEl.textContent += mockResponse[i++];
-        } else {
-            clearInterval(timer);
-            aiMsgEl.classList.remove('ai-typing');
-        }
+        if (i < text.length) aiMsgEl.textContent += text[i++];
+        else { clearInterval(timer); aiMsgEl.classList.remove('ai-typing'); }
     }, 30);
 }
 </script>

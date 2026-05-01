@@ -1,0 +1,12 @@
+{
+  "rewrites": [
+    {
+      "source": "/api/air/:path*",
+      "destination": "https://apis.data.go.kr/B552584/ArpltnInforInqireSvc/:path*"
+    },
+    {
+      "source": "/api/weather/:path*",
+      "destination": "https://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/:path*"
+    }
+  ]
+}

@@ -68,7 +68,6 @@
   .ai-badge::before { content: ''; width: 24px; height: 2px; background: var(--accent); }
   .ai-message { font-family: var(--font-serif); font-size: 1.2rem; line-height: 1.8; color: #fff; min-height: 60px; margin-bottom: 24px; }
   .ai-typing { display: inline-block; width: 2px; height: 1em; background: var(--accent); margin-left: 4px; animation: blink 1s infinite; }
-  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
 
   .stealth-tip { display: none; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 20px; margin-top: 20px; animation: fadeIn 0.5s ease; }
   .tip-label { font-size: 0.85rem; font-weight: 700; color: var(--accent); display: block; margin-bottom: 10px; }
@@ -76,7 +75,6 @@
   .tip-link { display: inline-block; background: #fff; color: #000; padding: 10px 24px; border-radius: 10px; font-size: 0.85rem; font-weight: 700; text-decoration: none; transition: transform 0.2s; }
   .tip-link:active { transform: scale(0.95); }
   .disclosure { font-size: 0.65rem; color: var(--text-muted); display: block; margin-top: 12px; opacity: 0.6; }
-  @keyframes fadeIn { from{opacity:0;} to{opacity:1;} }
 
   /* Verdict & Data */
   .verdict-card { text-align: center; padding: 48px 24px; border-radius: 32px; position: relative; overflow: hidden; }
@@ -122,30 +120,55 @@
   .act-item.caution { border-color: rgba(245, 158, 11, 0.3); color: var(--moderate); background: rgba(245, 158, 11, 0.05); }
   .act-item.no { border-color: rgba(239, 68, 68, 0.15); color: #52525b; text-decoration: line-through; opacity: 0.6; }
 
-  /* 💡 Magazine Section (AdSense SEO) */
+  /* 💡 Magazine Section (Toggle Format) */
   .magazine-section { margin-top: 80px; padding-top: 40px; border-top: 1px solid var(--border); animation: fadeUp 0.8s both; }
-  .mag-title { font-family: var(--font-serif); font-size: 2rem; color: #fff; margin-bottom: 8px; display: flex; align-items: center; gap: 12px; }
-  .article-card { background: var(--surface); border: 1px solid var(--border); border-radius: 24px; padding: 32px; margin-bottom: 24px; transition: transform 0.3s, border-color 0.3s; }
-  .article-card:hover { border-color: rgba(255,255,255,0.2); transform: translateY(-2px); }
+  .mag-title { font-family: var(--font-serif); font-size: 2rem; color: #fff; margin-bottom: 32px; display: flex; align-items: center; gap: 12px; }
+  
+  .article-card { background: var(--surface); border: 1px solid var(--border); border-radius: 24px; margin-bottom: 20px; transition: border-color 0.3s; overflow: hidden; cursor: pointer; }
+  .article-card:hover { border-color: rgba(255,255,255,0.2); }
+  
+  .article-header { padding: 28px 32px; display: flex; justify-content: space-between; align-items: center; gap: 20px; }
+  .article-header-left { flex: 1; }
   .article-category { font-size: 0.75rem; font-weight: 700; color: var(--accent); text-transform: uppercase; margin-bottom: 12px; display: inline-block; padding: 4px 12px; background: var(--accent-glow); border-radius: 100px; }
-  .article-title { font-family: var(--font-serif); font-size: 1.6rem; color: #fff; margin-bottom: 20px; line-height: 1.4; word-break: keep-all; }
-  .article-body { font-size: 1rem; color: var(--text-muted); line-height: 1.8; font-weight: 300; }
+  .article-title { font-family: var(--font-serif); font-size: 1.5rem; color: #fff; line-height: 1.4; word-break: keep-all; margin: 0; transition: color 0.3s; }
+  .toggle-icon { width: 32px; height: 32px; border-radius: 50%; background: rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: center; transition: transform 0.3s; color: var(--text-muted); font-size: 1.2rem; flex-shrink: 0; }
+  
+  .article-card.open .toggle-icon { transform: rotate(180deg); color: var(--accent); background: var(--accent-glow); }
+  .article-card.open .article-title { color: var(--accent); }
+  
+  .article-body { display: none; padding: 0 32px 32px; font-size: 1rem; color: var(--text-muted); line-height: 1.8; font-weight: 300; border-top: 1px solid rgba(255,255,255,0.05); margin-top: 10px; padding-top: 24px; }
+  .article-card.open .article-body { display: block; animation: fadeIn 0.4s ease; }
+  
   .article-body h3 { color: #e2e8f0; margin: 24px 0 12px; font-size: 1.2rem; font-family: var(--font-serif); }
   .article-body p { margin-bottom: 16px; }
   .article-date { font-size: 0.85rem; color: var(--text-muted); opacity: 0.6; margin-top: 24px; display: block; text-align: right; }
 
-  /* Loading & Toast */
+  /* Loading, Toast & Modals */
   #loading { display: none; position: fixed; inset: 0; background: rgba(9,9,11,0.95); backdrop-filter: blur(20px); z-index: 1000; flex-direction: column; align-items: center; justify-content: center; }
   .loader { width: 44px; height: 44px; border: 3px solid var(--border-light); border-radius: 50%; border-bottom-color: var(--accent); animation: rotation 1s linear infinite; }
   @keyframes rotation { to { transform: rotate(360deg); } }
   .toast { position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%) translateY(100px); background: rgba(24, 24, 27, 0.9); border: 1px solid var(--border-light); border-radius: 100px; padding: 12px 24px; color: #fff; z-index: 2000; transition: transform 0.4s, opacity 0.4s; opacity: 0; font-size: 0.9rem; }
   .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+  @keyframes fadeIn { from{opacity:0;} to{opacity:1;} }
 
-  /* Footer (AdSense Requirements) */
+  /* Modal Styles */
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(8px); z-index: 3000; align-items: center; justify-content: center; padding: 20px; opacity: 0; transition: opacity 0.3s; }
+  .modal-overlay.show { display: flex; opacity: 1; }
+  .modal-content { background: #18181b; border: 1px solid var(--border-light); border-radius: 24px; width: 100%; max-width: 500px; max-height: 80vh; overflow-y: auto; padding: 32px; position: relative; transform: translateY(20px); transition: transform 0.3s; box-shadow: 0 20px 40px rgba(0,0,0,0.4); }
+  .modal-overlay.show .modal-content { transform: translateY(0); }
+  .modal-close { position: absolute; top: 24px; right: 24px; background: rgba(255,255,255,0.1); border: none; color: #fff; width: 32px; height: 32px; border-radius: 50%; font-size: 1.2rem; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.2s; }
+  .modal-close:hover { background: rgba(255,255,255,0.2); }
+  .modal-title { font-family: var(--font-serif); font-size: 1.6rem; color: #fff; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid var(--border); }
+  .modal-body { color: var(--text-muted); font-size: 0.95rem; line-height: 1.6; }
+  .modal-body h4 { color: #e2e8f0; margin: 20px 0 8px; font-size: 1.05rem; }
+  .modal-body p { margin-bottom: 12px; }
+  .modal-body ul { margin-left: 20px; margin-bottom: 12px; }
+
+  /* Footer */
   footer { text-align: center; padding: 60px 20px 40px; border-top: 1px solid var(--border); margin-top: 40px; }
   .footer-links { display: flex; justify-content: center; gap: 24px; margin-bottom: 20px; flex-wrap: wrap; }
-  .footer-links a { color: var(--text-muted); text-decoration: none; font-size: 0.85rem; transition: color 0.2s; }
-  .footer-links a:hover { color: #fff; }
+  .footer-links button { background: none; border: none; color: var(--text-muted); font-family: var(--font-sans); font-size: 0.85rem; cursor: pointer; transition: color 0.2s; padding: 0; }
+  .footer-links button:hover { color: #fff; }
   .footer-copy { color: var(--text-muted); font-size: 0.8rem; opacity: 0.6; }
 
   @media (max-width: 640px) {
@@ -154,8 +177,9 @@
     .btn-geo { margin-left: 0; }
     .btn-primary { width: 100%; border-radius: 16px; margin-top: 10px; padding: 16px; }
     .data-grid { grid-template-columns: repeat(2, 1fr); }
-    .article-card { padding: 24px 20px; }
-    .article-title { font-size: 1.4rem; }
+    .article-header { padding: 24px 20px; }
+    .article-body { padding: 0 20px 24px; }
+    .article-title { font-size: 1.3rem; }
   }
 </style>
 </head>
@@ -170,6 +194,14 @@
 </div>
 
 <div class="toast" id="toast"></div>
+
+<div class="modal-overlay" id="infoModal" onclick="closeModal(event)">
+  <div class="modal-content" onclick="event.stopPropagation()">
+    <button class="modal-close" onclick="closeModal()">×</button>
+    <h2 class="modal-title" id="modalTitle">제목</h2>
+    <div class="modal-body" id="modalBody">내용</div>
+  </div>
+</div>
 
 <header>
   <div class="logo">숨결<span>.</span></div>
@@ -258,62 +290,89 @@
 
   <section class="magazine-section" id="magazineSection">
     <h2 class="mag-title">📖 숨결 매거진</h2>
-    <p style="color:var(--text-muted); margin-bottom:32px; font-weight:300;">건강한 일상을 지키기 위한 대기질과 날씨 상식</p>
+    <p style="color:var(--text-muted); margin-bottom:32px; font-weight:300;">제목을 눌러 자세한 내용을 확인하세요.</p>
 
-    <article class="article-card glass">
-      <span class="article-category">환경과 건강</span>
-      <h2 class="article-title">초미세먼지(PM2.5)가 우리 몸에 미치는 치명적인 영향과 대처법</h2>
+    <article class="article-card glass" onclick="toggleArticle(this)">
+      <div class="article-header">
+        <div class="article-header-left">
+          <span class="article-category">환경과 건강</span>
+          <h2 class="article-title">초미세먼지(PM2.5)가 우리 몸에 미치는 치명적인 영향과 대처법</h2>
+        </div>
+        <div class="toggle-icon">▼</div>
+      </div>
       <div class="article-body">
         <p>현대인의 건강을 위협하는 가장 큰 요소 중 하나는 바로 미세먼지, 그중에서도 '초미세먼지(PM2.5)'입니다. 머리카락 굵기의 1/20에서 1/30에 불과한 이 미세한 입자들은 호흡기를 거쳐 폐포를 통과해 혈관으로 직접 침투할 수 있어 매우 치명적입니다.</p>
         <h3>1. 초미세먼지의 주요 원인과 구성 성분</h3>
-        <p>초미세먼지는 주로 자동차의 배기가스, 화력발전소, 공장 등에서 화석연료가 연소될 때 발생합니다. 황산염, 질산염, 탄소류, 중금속 등 세계보건기구(WHO)가 지정한 1급 발암물질이 다량 포함되어 있습니다. 일반적인 먼지와 달리 기관지에서 걸러지지 않기 때문에 각별한 주의가 필요합니다.</p>
-        <h3>2. 인체에 미치는 3가지 치명적 질환</h3>
-        <p>첫째, 호흡기 질환입니다. 천식, 만성 폐쇄성 폐질환(COPD)을 악화시킵니다. 둘째, 심혈관 질환입니다. 혈관에 침투하여 염증 반응을 일으키고 뇌졸중, 심근경색의 발병률을 높입니다. 셋째, 뇌 및 인지 기능 저하입니다. 최근 연구에 따르면 초미세먼지가 뇌 신경 세포를 손상시켜 치매 발병 시기를 앞당긴다는 결과도 발표되었습니다.</p>
-        <h3>3. 생활 속 올바른 대처법</h3>
-        <p>미세먼지가 '나쁨' 이상인 날에는 야외 운동을 반드시 피해야 합니다. 부득이하게 외출할 경우, 코와 입에 완전히 밀착되는 식약처 인증 KF80 또는 KF94 보건용 마스크를 착용해야 합니다. 외출 후에는 손발을 깨끗이 씻고, 식염수로 코 안을 세척하는 것이 큰 도움이 됩니다.</p>
+        <p>초미세먼지는 주로 자동차의 배기가스, 화력발전소, 공장 등에서 화석연료가 연소될 때 발생합니다. 황산염, 질산염, 중금속 등 세계보건기구(WHO)가 지정한 1급 발암물질이 다량 포함되어 있습니다. 일반 먼지와 달리 기관지에서 걸러지지 않기 때문에 각별한 주의가 필요합니다.</p>
+        <h3>2. 생활 속 올바른 대처법</h3>
+        <p>미세먼지가 '나쁨' 이상인 날에는 야외 운동을 반드시 피해야 합니다. 부득이하게 외출할 경우 식약처 인증 KF80 이상의 마스크를 밀착 착용해야 합니다. 외출 후에는 식염수로 코 안을 세척하는 것이 큰 도움이 됩니다.</p>
         <span class="article-date">Updated: 2026. 04. 28</span>
       </div>
     </article>
 
-    <article class="article-card glass">
-      <span class="article-category">실내 공기 관리</span>
-      <h2 class="article-title">미세먼지 나쁜 날, 실내 환기는 어떻게 해야 할까? (올바른 환기 타이밍)</h2>
+    <article class="article-card glass" onclick="toggleArticle(this)">
+      <div class="article-header">
+        <div class="article-header-left">
+          <span class="article-category">실내 공기 관리</span>
+          <h2 class="article-title">미세먼지 나쁜 날, 실내 환기는 어떻게 해야 할까?</h2>
+        </div>
+        <div class="toggle-icon">▼</div>
+      </div>
       <div class="article-body">
-        <p>바깥 공기가 뿌옇고 미세먼지 농도가 높은 날, 많은 분들이 창문을 굳게 닫고 하루 종일 공기청정기만 가동합니다. 하지만 전문가들은 "아무리 바깥 공기가 나빠도 최소한의 환기는 필수"라고 입을 모아 강조합니다. 밀폐된 공간에서는 오히려 이산화탄소(CO2), 라돈, 포름알데히드 등 유해 물질이 축적되기 때문입니다.</p>
-        <h3>1. 실내 오염 물질이 더 위험한 이유</h3>
-        <p>요리를 할 때 발생하는 일산화탄소와 초미세먼지, 새 가구에서 나오는 휘발성 유기화합물은 공기청정기만으로는 완벽하게 제거되지 않습니다. 오직 외부의 신선한 공기를 유입시켜 희석하는 '자연 환기'만이 이산화탄소와 라돈 수치를 낮출 수 있는 유일한 방법입니다.</p>
-        <h3>2. 미세먼지 나쁜 날의 환기 요령</h3>
-        <p>대기질이 '매우 나쁨' 수준이 아니라면, 하루 3번, 한 번에 10분 이내로 짧게 환기하는 것이 좋습니다. 환기 타이밍은 대기 흐름이 활발하여 미세먼지가 위로 흩어지는 **낮 시간대(오전 11시 ~ 오후 3시)**가 가장 적합합니다. 이른 아침이나 늦은 밤에는 오염 물질이 지표면으로 가라앉으므로 환기를 피해야 합니다.</p>
-        <h3>3. 공기청정기와 환기의 시너지 효과</h3>
-        <p>환기를 할 때는 맞바람이 치도록 마주 보는 창문을 동시에 열어 짧고 굵게 오염된 공기를 배출하세요. 환기를 마친 직후에는 창문을 닫고 창문 주변에 분무기로 물을 뿌려 먼지를 가라앉힌 뒤 물걸레질을 합니다. 그 후 공기청정기를 강하게 가동하여 유입된 미세먼지를 빠르게 제거하는 것이 가장 완벽한 실내 공기질 관리 루틴입니다.</p>
+        <p>전문가들은 "아무리 바깥 공기가 나빠도 최소한의 환기는 필수"라고 입을 모아 강조합니다. 밀폐된 공간에서는 오히려 이산화탄소(CO2), 라돈, 포름알데히드 등 유해 물질이 축적되기 때문입니다.</p>
+        <h3>미세먼지 나쁜 날의 환기 요령</h3>
+        <p>대기질이 '매우 나쁨' 수준이 아니라면, 하루 3번, 한 번에 10분 이내로 짧게 환기하는 것이 좋습니다. 환기 타이밍은 대기 흐름이 활발하여 미세먼지가 위로 흩어지는 <strong>낮 시간대(오전 11시 ~ 오후 3시)</strong>가 가장 적합합니다. 이른 아침이나 늦은 밤에는 오염 물질이 지표면으로 가라앉으므로 환기를 피해야 합니다.</p>
+        <p>환기를 마친 직후에는 창문을 닫고 물걸레질을 한 뒤, 공기청정기를 강하게 가동하여 유입된 미세먼지를 빠르게 제거하세요.</p>
         <span class="article-date">Updated: 2026. 04. 30</span>
       </div>
     </article>
 
-    <article class="article-card glass">
-      <span class="article-category">계절성 위험</span>
-      <h2 class="article-title">보이지 않는 살인마 '오존(O3)', 자외선보다 위험한 이유와 예방 수칙</h2>
+    <article class="article-card glass" onclick="toggleArticle(this)">
+      <div class="article-header">
+        <div class="article-header-left">
+          <span class="article-category">역사와 날씨</span>
+          <h2 class="article-title">조선시대 사람들은 흙먼지(황사)를 어떻게 이겨냈을까?</h2>
+        </div>
+        <div class="toggle-icon">▼</div>
+      </div>
       <div class="article-body">
-        <p>봄과 여름철, 일기예보에서 미세먼지와 함께 자주 등장하는 불청객이 바로 '오존(Ozone)'입니다. 미세먼지와 달리 오존은 기체 상태이기 때문에 마스크로도 걸러낼 수 없어 우리 몸에 더욱 직접적이고 치명적인 타격을 줍니다.</p>
-        <h3>1. 지표면 오존의 생성 과정</h3>
-        <p>성층권의 오존층은 자외선을 막아주는 이로운 역할을 하지만, 우리가 숨 쉬는 지표면 근처의 오존은 자동차 배기가스(질소산화물)와 공장 매연(휘발성유기화합물)이 강한 햇빛(자외선)과 광화학 반응을 일으켜 생성되는 독성 물질입니다. 따라서 햇빛이 강하고 기온이 높으며 바람이 불지 않는 날 오후에 농도가 가장 높게 치솟습니다.</p>
-        <h3>2. 오존이 인체에 미치는 파괴적인 영향</h3>
-        <p>오존은 강력한 산화력을 가지고 있어 우리 몸의 세포를 파괴합니다. 눈의 점막을 자극하여 안구건조증과 결막염을 유발하며, 호흡기를 손상시켜 기침, 가슴 통증, 천식을 악화시킵니다. 심한 경우 폐 기능을 영구적으로 저하시킬 수 있으므로 노약자와 호흡기 질환자는 특히 주의해야 합니다.</p>
-        <h3>3. 마스크로 못 막는 오존, 유일한 예방법은?</h3>
-        <p>오존 농도가 0.12ppm을 넘어 '주의보'가 발령된 날에는 오후 2시부터 5시 사이의 야외 활동을 피하는 것이 유일한 예방책입니다. 외출이 불가피하다면 직사광선이 내리쬐는 도로변이나 차로를 피하고, 그늘진 곳으로 이동해야 합니다. 또한 피부와 눈을 보호하기 위해 챙이 넓은 모자, 선글라스, 자외선 차단제(선크림)를 반드시 활용하시기 바랍니다.</p>
-        <span class="article-date">Updated: 2026. 05. 01</span>
+        <p>미세먼지와 황사는 현대의 전유물이 아닙니다. 조선왕조실록을 살펴보면 하늘에서 흙이 비처럼 내린다는 뜻의 <strong>'우토(雨土)'</strong> 또는 <strong>'매우(霾雨)'</strong>라는 기록이 자주 등장합니다.</p>
+        <h3>명종실록에 기록된 흙비</h3>
+        <p>조선 명종 시대의 기록을 보면 "흙비가 내렸다. 전라도 전주 등지에는 안개 기운이 사방에 꽉 차고 흙이 비처럼 떨어져 옷에 묻었다"는 대목이 있습니다. 당시 사람들은 이를 하늘이 내리는 재앙이나 불길한 징조로 여겼습니다.</p>
+        <h3>조선시대의 대처법</h3>
+        <p>현대처럼 KF94 마스크나 공기청정기가 없었던 조선시대에는, 흙비가 내리는 날 외출을 삼가고 창호지를 덧발라 문틈으로 먼지가 들어오는 것을 막았습니다. 또한, 기관지를 보호하기 위해 도라지(길경)나 배, 꿀을 달여 마시며 건강을 다스렸다는 의학 기록도 찾아볼 수 있습니다. 수백 년 전 선조들의 지혜가 현대의 한방 요법과도 일맥상통한다는 점이 무척 흥미롭습니다.</p>
+        <span class="article-date">Updated: 2026. 05. 05</span>
       </div>
     </article>
+
+    <article class="article-card glass" onclick="toggleArticle(this)">
+      <div class="article-header">
+        <div class="article-header-left">
+          <span class="article-category">계절성 위험</span>
+          <h2 class="article-title">보이지 않는 살인마 '오존(O3)', 자외선보다 위험한 이유</h2>
+        </div>
+        <div class="toggle-icon">▼</div>
+      </div>
+      <div class="article-body">
+        <p>봄과 여름철, 일기예보에서 미세먼지와 함께 자주 등장하는 불청객이 바로 '오존(Ozone)'입니다. 미세먼지와 달리 오존은 기체 상태이기 때문에 마스크로도 걸러낼 수 없어 우리 몸에 더욱 직접적이고 치명적인 타격을 줍니다.</p>
+        <h3>오존이 인체에 미치는 파괴적인 영향</h3>
+        <p>오존은 강력한 산화력을 가지고 있어 우리 몸의 세포를 파괴합니다. 눈의 점막을 자극하여 안구건조증과 결막염을 유발하며, 호흡기를 손상시켜 기침, 가슴 통증, 천식을 악화시킵니다.</p>
+        <h3>유일한 예방법은?</h3>
+        <p>오존 농도가 0.12ppm을 넘어 '주의보'가 발령된 날에는 오후 2시부터 5시 사이의 야외 활동을 피하는 것이 유일한 예방책입니다. 직사광선이 내리쬐는 도로변을 피하고, 챙이 넓은 모자와 자외선 차단제를 반드시 활용하시기 바랍니다.</p>
+        <span class="article-date">Updated: 2026. 05. 08</span>
+      </div>
+    </article>
+
   </section>
 
 </main>
 
 <footer>
   <div class="footer-links">
-    <a href="#" style="font-weight: 700; color: #fff;">서비스 소개</a>
-    <a href="#">이용약관</a>
-    <a href="#" style="font-weight: 700;">개인정보처리방침</a>
-    <a href="#">문의하기</a>
+    <button style="font-weight: 700; color: #fff;" onclick="openModal('intro')">서비스 소개</button>
+    <button onclick="openModal('terms')">이용약관</button>
+    <button style="font-weight: 700;" onclick="openModal('privacy')">개인정보처리방침</button>
+    <button onclick="openModal('contact')">문의하기</button>
   </div>
   <p class="footer-copy">숨결 Pro · 하이브리드 대기질 & 날씨 분석 엔진</p>
   <p class="footer-copy" style="margin-top: 8px;">Copyright © 2026 Soomgyeol. All rights reserved.</p>
@@ -321,18 +380,84 @@
 
 <script>
 // ─────────────────────────────────────
-// 0. 무적의 전역 에러 방어막 (로딩창 멈춤 방지)
+// 0. 토글 및 모달 스크립트
+// ─────────────────────────────────────
+function toggleArticle(element) {
+  element.classList.toggle('open');
+}
+
+const modalData = {
+  intro: {
+    title: "숨결 Pro 서비스 소개",
+    body: `
+      <p><strong>숨결 Pro</strong>는 사용자의 현재 위치를 기반으로 실시간 대기질과 날씨 데이터를 분석하여, 가장 안전하고 쾌적한 야외 활동을 돕는 스마트 코칭 웹 서비스입니다.</p>
+      <p>단순히 수치만 보여주는 것을 넘어, 천식, 영유아 동반, 야외 운동 등 개인의 상황에 맞춘 직관적인 감성 리포트와 행동 요령을 제공합니다.</p>
+      <p>환경부 공공데이터포털(VWORLD) 및 OpenWeatherMap API를 다중으로 결합하여 높은 안정성을 자랑하며, 건강한 일상을 지키기 위한 최적의 파트너가 되겠습니다.</p>`
+  },
+  terms: {
+    title: "이용약관",
+    body: `
+      <h4>제 1 조 (목적)</h4>
+      <p>본 약관은 '숨결 Pro'(이하 "서비스")가 제공하는 대기질 및 날씨 정보 서비스의 이용 조건 및 절차, 이용자와 서비스 간의 권리, 의무를 규정함을 목적으로 합니다.</p>
+      <h4>제 2 조 (정보의 한계 및 면책)</h4>
+      <p>본 서비스에서 제공하는 대기질 및 날씨 정보는 공공 API 및 외부 제공자의 데이터에 기반하며, 실제 기상 상황과 오차가 발생할 수 있습니다. 서비스는 제공된 정보로 인해 발생한 사용자의 신체적, 재산적 피해에 대해 법적 책임을 지지 않습니다.</p>
+      <h4>제 3 조 (제휴 링크 안내)</h4>
+      <p>본 서비스는 건강 관리 팁의 일환으로 외부 쇼핑몰(예: 토스쇼핑 등)의 상품을 추천할 수 있으며, 이 포스팅은 제휴 마케팅 활동의 일환으로 이에 따른 일정액의 수수료를 제공받을 수 있습니다. 이는 서비스의 무료 운영을 위한 기반이 됩니다.</p>`
+  },
+  privacy: {
+    title: "개인정보처리방침",
+    body: `
+      <p>'숨결 Pro'는 사용자의 프라이버시를 매우 중요하게 생각합니다.</p>
+      <h4>1. 수집하는 개인정보 (위치 데이터)</h4>
+      <p>본 서비스는 지역별 맞춤 대기질 조회를 위해 사용자의 브라우저에서 '위치 정보(GPS)'를 요청할 수 있습니다.</p>
+      <h4>2. 데이터의 저장 및 파기</h4>
+      <p>수집된 위치 정보(위도, 경도)는 즉시 외부 API(날씨/대기질) 호출을 위한 일회성 변환 용도로만 사용되며, <strong>서비스의 서버나 데이터베이스에 어떠한 형태로도 저장되거나 기록되지 않습니다.</strong> 페이지를 이탈하거나 새로고침 시 해당 데이터는 즉각 휘발됩니다.</p>
+      <h4>3. 쿠키 및 로컬 스토리지</h4>
+      <p>현재 본 서비스는 사용자의 식별을 위한 쿠키나 세션을 수집하지 않습니다.</p>`
+  },
+  contact: {
+    title: "문의하기",
+    body: `
+      <p>서비스 이용 중 불편한 점이 있으시거나, 기능 제안, 비즈니스 및 제휴 문의가 있으신 경우 아래 이메일로 연락해 주시기 바랍니다.</p>
+      <div style="background: rgba(255,255,255,0.05); padding: 16px; border-radius: 12px; margin-top: 16px; text-align: center;">
+        <span style="font-size: 0.85rem; color: var(--text-muted);">공식 이메일</span><br>
+        <strong style="font-size: 1.2rem; color: var(--accent); letter-spacing: 0.05em;">chomibinine@gmail.com</strong>
+      </div>
+      <p style="margin-top: 20px; font-size: 0.85rem; color: var(--text-muted);">평일 기준 1~2영업일 이내에 순차적으로 답변해 드리고 있습니다.</p>`
+  }
+};
+
+function openModal(type) {
+  const overlay = document.getElementById('infoModal');
+  const title = document.getElementById('modalTitle');
+  const body = document.getElementById('modalBody');
+  
+  if(modalData[type]) {
+    title.innerText = modalData[type].title;
+    body.innerHTML = modalData[type].body;
+    overlay.classList.add('show');
+    document.body.style.overflow = 'hidden'; // 배경 스크롤 방지
+  }
+}
+
+function closeModal(e) {
+  const overlay = document.getElementById('infoModal');
+  overlay.classList.remove('show');
+  document.body.style.overflow = 'auto';
+}
+
+// ─────────────────────────────────────
+// 1. 에러 방어막 및 헬퍼 함수
 // ─────────────────────────────────────
 window.addEventListener('error', () => { document.getElementById('loading').style.display = 'none'; });
 window.addEventListener('unhandledrejection', () => { document.getElementById('loading').style.display = 'none'; });
 
-// DOM 조작 시 에러를 원천 차단하는 헬퍼 함수
 const setTxt = (id, text) => { const el = document.getElementById(id); if(el) el.textContent = text ?? '—'; };
 const setHtml = (id, html) => { const el = document.getElementById(id); if(el) el.innerHTML = html; };
 const setStyle = (id, prop, val) => { const el = document.getElementById(id); if(el) el.style.setProperty(prop, val); };
 
 // ─────────────────────────────────────
-// 1. API 키 및 토스 제휴 링크 DB
+// 2. API 및 글로벌 상태
 // ─────────────────────────────────────
 const VWORLD_API_KEY = "5B0D3660-9AA8-3DEC-BDB4-BE8463D07762"; 
 const OWM_API_KEY = "68be8e3e30b8d79dca72993923055020";
@@ -346,7 +471,7 @@ const SHARE_LINKS = {
   warmer: { text: "야외 운동 시 호흡이 편안하면서도 자외선과 먼지를 막아주는 스포츠 전용 넥워머를 활용해 보세요.", url: "https://toss.im/_m/vBYMH07c" }
 };
 
-let currentLat = 37.5665; let currentLon = 126.9780; // 기본 서울
+let currentLat = 37.5665; let currentLon = 126.9780;
 let lastLocation = '서울시 중구';
 let selectedConditions = []; 
 
@@ -362,24 +487,18 @@ function showToast(msg) {
 }
 
 // ─────────────────────────────────────
-// 2. 권한 팝업 및 자동 실행 (JS 강제 컷오프 포함)
+// 3. 위치 기반 자동 실행 엔진
 // ─────────────────────────────────────
-window.addEventListener('DOMContentLoaded', () => {
-    initAutoScan(true); // 페이지 접속 시 무조건 권한 체크 및 실행
-});
+window.addEventListener('DOMContentLoaded', () => { initAutoScan(true); });
 
 function requestGPSWithPrompt() {
     if (navigator.permissions) {
         navigator.permissions.query({ name: 'geolocation' }).then(function(result) {
             if (result.state === 'denied') {
                 alert("⚠️ 위치 권한이 차단되어 있습니다.\n\n정확한 동네 날씨와 미세먼지를 분석하려면 브라우저 설정(자물쇠 아이콘)에서 위치 권한을 '허용'으로 변경해주세요.");
-            } else {
-                initAutoScan(true);
-            }
+            } else { initAutoScan(true); }
         });
-    } else {
-        initAutoScan(true);
-    }
+    } else { initAutoScan(true); }
 }
 
 async function initAutoScan(requestPermission = true) {
@@ -428,7 +547,7 @@ async function manualScan() {
 }
 
 // ─────────────────────────────────────
-// 3. 통신 엔진
+// 4. API 통신 처리
 // ─────────────────────────────────────
 async function safeFetch(url, timeoutMs = 5000) {
     const controller = new AbortController();
@@ -500,19 +619,16 @@ async function processDataOnly(stationName) {
         return { time: timeStr, val: Math.max(5, air.pm25 + Math.round((Math.random()-0.5)*12)) };
     });
 
-    try {
-        renderDashboard(air, weather);
-    } catch(renderErr) {
-        console.error(renderErr);
-        showToast("⚠️ 화면 구성 중 오류가 발생했습니다.");
-    } finally {
+    try { renderDashboard(air, weather); } 
+    catch(renderErr) { showToast("⚠️ 화면 구성 중 오류가 발생했습니다."); } 
+    finally {
         const loading = document.getElementById('loading');
         if(loading) loading.style.display = 'none';
     }
 }
 
 // ─────────────────────────────────────
-// 4. 프리미엄 렌더링 (각 섹션별 독립 트라이캐치)
+// 5. 대시보드 렌더링
 // ─────────────────────────────────────
 let activeAiTimer = null; 
 
@@ -520,114 +636,102 @@ function renderDashboard(air, w) {
     const grade = air.pm25 <= 15 ? 'good' : air.pm25 <= 35 ? 'moderate' : air.pm25 <= 75 ? 'bad' : 'very-bad';
     const color = { good:'#10b981', moderate:'#f59e0b', bad:'#f97316', 'very-bad':'#ef4444' }[grade];
     
-    try {
-        setStyle('orb1', 'background', color);
-        setStyle('verdictCard', '--verdict-color', color);
-        
-        setTxt('verdictLocation', `📍 ${air.stationName}`);
-        setTxt('verdictEmoji', { good:'🌤️', moderate:'😐', bad:'😷', 'very-bad':'🚨' }[grade]);
-        setTxt('verdictTitle', { good:'나가도 좋습니다', moderate:'짧게 다녀오세요', bad:'실내에 머무세요', 'very-bad':'외출을 자제하세요' }[grade]);
-        setTxt('verdictSub', `현재 대기질이 ${{ good:'매우 좋음', moderate:'보통', bad:'나쁨', 'very-bad':'매우 나쁨' }[grade]} 수준입니다. 최적의 행동 요령을 확인하세요.`);
+    setStyle('orb1', 'background', color);
+    setStyle('verdictCard', '--verdict-color', color);
+    
+    setTxt('verdictLocation', `📍 ${air.stationName}`);
+    setTxt('verdictEmoji', { good:'🌤️', moderate:'😐', bad:'😷', 'very-bad':'🚨' }[grade]);
+    setTxt('verdictTitle', { good:'나가도 좋습니다', moderate:'짧게 다녀오세요', bad:'실내에 머무세요', 'very-bad':'외출을 자제하세요' }[grade]);
+    setTxt('verdictSub', `현재 대기질이 ${{ good:'매우 좋음', moderate:'보통', bad:'나쁨', 'very-bad':'매우 나쁨' }[grade]} 수준입니다. 최적의 행동 요령을 확인하세요.`);
 
-        setTxt('pm10Val', air.pm10); setTxt('pm25Val', air.pm25); setTxt('o3Val', air.o3);
+    setTxt('pm10Val', air.pm10); setTxt('pm25Val', air.pm25); setTxt('o3Val', air.o3);
 
-        const bColor = (g) => `grade-badge ${{ good:'grade-good', moderate:'grade-moderate', bad:'grade-bad', 'very-bad':'grade-very-bad' }[g]}`;
-        const bLabel = (g) => { return { good:'좋음', moderate:'보통', bad:'나쁨', 'very-bad':'매우 나쁨' }[g]; };
-        
-        setHtml('pm25Badge', `<div class="${bColor(grade)}">${bLabel(grade)}</div>`);
-        const pm10g = air.pm10 <= 30 ? 'good' : air.pm10 <= 80 ? 'moderate' : air.pm10 <= 150 ? 'bad' : 'very-bad'; 
-        setHtml('pm10Badge', `<div class="${bColor(pm10g)}">${bLabel(pm10g)}</div>`);
-        const o3g = air.o3 <= 0.030 ? 'good' : air.o3 <= 0.090 ? 'moderate' : air.o3 <= 0.150 ? 'bad' : 'very-bad'; 
-        setHtml('o3Badge', `<div class="${bColor(o3g)}">${bLabel(o3g)}</div>`);
-    } catch(e) { console.error(e); }
+    const bColor = (g) => `grade-badge ${{ good:'grade-good', moderate:'grade-moderate', bad:'grade-bad', 'very-bad':'grade-very-bad' }[g]}`;
+    const bLabel = (g) => { return { good:'좋음', moderate:'보통', bad:'나쁨', 'very-bad':'매우 나쁨' }[g]; };
+    
+    setHtml('pm25Badge', `<div class="${bColor(grade)}">${bLabel(grade)}</div>`);
+    const pm10g = air.pm10 <= 30 ? 'good' : air.pm10 <= 80 ? 'moderate' : air.pm10 <= 150 ? 'bad' : 'very-bad'; 
+    setHtml('pm10Badge', `<div class="${bColor(pm10g)}">${bLabel(pm10g)}</div>`);
+    const o3g = air.o3 <= 0.030 ? 'good' : air.o3 <= 0.090 ? 'moderate' : air.o3 <= 0.150 ? 'bad' : 'very-bad'; 
+    setHtml('o3Badge', `<div class="${bColor(o3g)}">${bLabel(o3g)}</div>`);
 
-    try {
-        const skyIcons = ['', '☀️', '', '⛅', '☁️']; const ptyIcons = ['', '🌧️', '🌨️', '❄️', '⛈️'];
-        const icon = w.ptyCode > 0 ? ptyIcons[1] : (skyIcons[w.skyCode] || '☀️');
-        setHtml('weatherRow', `
-          <div class="data-item"><div class="data-lbl">기온</div><div class="data-val">${w.temp}°C</div><div style="font-size:1.4rem; margin-top:4px;">${icon}</div></div>
-          <div class="data-item"><div class="data-lbl">습도</div><div class="data-val">${w.humidity}%</div><div style="font-size:1.4rem; margin-top:4px;">💧</div></div>
-          <div class="data-item"><div class="data-lbl">풍속</div><div class="data-val">${w.windSpeed}</div><div style="font-size:0.8rem; color:var(--text-muted); margin-top:4px;">m/s</div></div>
-          <div class="data-item"><div class="data-lbl">강수</div><div class="data-val">${w.rainProb}%</div><div style="font-size:1.4rem; margin-top:4px;">🌂</div></div>`);
-    } catch(e) { console.error(e); }
+    const skyIcons = ['', '☀️', '', '⛅', '☁️']; const ptyIcons = ['', '🌧️', '🌨️', '❄️', '⛈️'];
+    const icon = w.ptyCode > 0 ? ptyIcons[1] : (skyIcons[w.skyCode] || '☀️');
+    setHtml('weatherRow', `
+      <div class="data-item"><div class="data-lbl">기온</div><div class="data-val">${w.temp}°C</div><div style="font-size:1.4rem; margin-top:4px;">${icon}</div></div>
+      <div class="data-item"><div class="data-lbl">습도</div><div class="data-val">${w.humidity}%</div><div style="font-size:1.4rem; margin-top:4px;">💧</div></div>
+      <div class="data-item"><div class="data-lbl">풍속</div><div class="data-val">${w.windSpeed}</div><div style="font-size:0.8rem; color:var(--text-muted); margin-top:4px;">m/s</div></div>
+      <div class="data-item"><div class="data-lbl">강수</div><div class="data-val">${w.rainProb}%</div><div style="font-size:1.4rem; margin-top:4px;">🌂</div></div>`);
 
-    try {
-        setTxt('bestTime', "11:00 - 15:00");
-        setTxt('bestTimeDesc', "하루 중 대기 순환이 가장 원활하여 미세먼지 농도가 낮아질 확률이 높은 시간대입니다.");
-        
-        setHtml('maskRec', air.pm25 > 35 ? "<span style='color:var(--bad)'>KF80 이상 필수</span>" : "<span style='color:var(--good)'>착용 불필요</span>");
-        setTxt('maskDesc', air.pm25 > 35 ? "눈에 보이지 않는 초미세먼지를 걸러줄 수 있는 식약처 인증 보건용 마스크를 반드시 착용하고 외출하세요." : "공기가 맑고 깨끗합니다. 마스크 없이 상쾌한 공기를 깊게 들이마셔도 좋습니다.");
-        
-        setHtml('ventRec', air.pm25 > 75 ? "<span style='color:var(--very-bad)'>환기 절대 자제</span>" : "<span style='color:var(--good)'>지금 환기 가능</span>");
-        setTxt('ventDesc', air.pm25 > 75 ? "외부 공기가 매우 탁합니다. 창문을 닫고 실내 공기청정기를 가동하여 공기 질을 안전하게 관리하세요." : "창문을 활짝 열어 맞바람이 치도록 실내 공기를 10분 이상 깨끗하게 순환시키세요.");
-    } catch(e) { console.error(e); }
+    setTxt('bestTime', "11:00 - 15:00");
+    setTxt('bestTimeDesc', "하루 중 대기 순환이 가장 원활하여 미세먼지 농도가 낮아질 확률이 높은 시간대입니다.");
+    
+    setHtml('maskRec', air.pm25 > 35 ? "<span style='color:var(--bad)'>KF80 이상 필수</span>" : "<span style='color:var(--good)'>착용 불필요</span>");
+    setTxt('maskDesc', air.pm25 > 35 ? "보이지 않는 초미세먼지를 걸러줄 수 있는 식약처 인증 보건용 마스크를 반드시 착용하고 외출하세요." : "공기가 맑고 깨끗합니다. 마스크 없이 상쾌한 공기를 깊게 들이마셔도 좋습니다.");
+    
+    setHtml('ventRec', air.pm25 > 75 ? "<span style='color:var(--very-bad)'>환기 절대 자제</span>" : "<span style='color:var(--good)'>지금 환기 가능</span>");
+    setTxt('ventDesc', air.pm25 > 75 ? "외부 공기가 매우 탁합니다. 창문을 닫고 실내 공기청정기를 가동하여 공기 질을 안전하게 관리하세요." : "창문을 활짝 열어 맞바람이 치도록 실내 공기를 10분 이상 깨끗하게 순환시키세요.");
 
-    try {
-        let timelineHTML = '';
-        if(w.hourly && w.hourly.length > 0) {
-            const maxVal = Math.max(...w.hourly.map(t => t.val)) || 10;
-            w.hourly.forEach((t, i) => {
-                const tg = t.val <= 15 ? 'good' : t.val <= 35 ? 'moderate' : 'bad';
-                const hp = Math.max(10, (t.val / maxVal) * 100);
-                const hour = parseInt(t.time.substring(0, 2)) || 0;
-                timelineHTML += `<div class="tl-col"><div class="tl-bar" style="height:${hp}%;background:${{good:'#10b981', moderate:'#f59e0b', bad:'#f97316'}[tg]};opacity:${i===0?1:0.4}"></div><div class="tl-time ${i===0?'now':''}">${hour}시</div></div>`;
-            });
-        }
-        setHtml('timeline', timelineHTML);
-    } catch(e) { console.error(e); }
+    let timelineHTML = '';
+    if(w.hourly && w.hourly.length > 0) {
+        const maxVal = Math.max(...w.hourly.map(t => t.val)) || 10;
+        w.hourly.forEach((t, i) => {
+            const tg = t.val <= 15 ? 'good' : t.val <= 35 ? 'moderate' : 'bad';
+            const hp = Math.max(10, (t.val / maxVal) * 100);
+            const hour = parseInt(t.time.substring(0, 2)) || 0;
+            timelineHTML += `<div class="tl-col"><div class="tl-bar" style="height:${hp}%;background:${{good:'#10b981', moderate:'#f59e0b', bad:'#f97316'}[tg]};opacity:${i===0?1:0.4}"></div><div class="tl-time ${i===0?'now':''}">${hour}시</div></div>`;
+        });
+    }
+    setHtml('timeline', timelineHTML);
 
-    try {
-        const actData = [
-          { icon:'🚶', name:'가벼운 산책', okPm25:35, rainOk:false }, { icon:'🏃', name:'조깅 및 러닝', okPm25:25, rainOk:false },
-          { icon:'🚴', name:'자전거 라이딩', okPm25:30, rainOk:false }, { icon:'🧺', name:'야외 빨래 건조', okPm25:20, rainOk:false },
-          { icon:'👶', name:'영유아 동반', okPm25:20, rainOk:false }, { icon:'🧓', name:'어르신 외출', okPm25:25, rainOk:true }
-        ];
-        let activitiesHTML = actData.map(a => {
-          const blocked = (w.ptyCode > 0) && !a.rainOk; 
-          const ok = !blocked && air.pm25 <= a.okPm25;
-          const caution = !blocked && !ok && air.pm25 <= a.okPm25 * 1.6;
-          const cls = ok ? 'ok' : caution ? 'caution' : 'no';
-          return `<div class="act-item ${cls}"><span class="act-icon">${a.icon}</span>${a.name}</div>`;
-        }).join('');
-        setHtml('activities', activitiesHTML);
-    } catch(e) { console.error(e); }
+    const actData = [
+      { icon:'🚶', name:'가벼운 산책', okPm25:35, rainOk:false }, { icon:'🏃', name:'조깅 및 러닝', okPm25:25, rainOk:false },
+      { icon:'🚴', name:'자전거 라이딩', okPm25:30, rainOk:false }, { icon:'🧺', name:'야외 빨래 건조', okPm25:20, rainOk:false },
+      { icon:'👶', name:'영유아 동반', okPm25:20, rainOk:false }, { icon:'🧓', name:'어르신 외출', okPm25:25, rainOk:true }
+    ];
+    let activitiesHTML = actData.map(a => {
+      const blocked = (w.ptyCode > 0) && !a.rainOk; 
+      const ok = !blocked && air.pm25 <= a.okPm25;
+      const caution = !blocked && !ok && air.pm25 <= a.okPm25 * 1.6;
+      const cls = ok ? 'ok' : caution ? 'caution' : 'no';
+      return `<div class="act-item ${cls}"><span class="act-icon">${a.icon}</span>${a.name}</div>`;
+    }).join('');
+    setHtml('activities', activitiesHTML);
 
-    try {
-        let baseMsg = "가벼운 산책이나 야외 활동을 즐기기에 완벽하고 상쾌한 날씨예요!";
-        if (air.pm25 > 35) baseMsg = "바깥 공기가 조금 탁하네요. 기관지 보호를 위해 외출하실 때 꼭 마스크를 챙겨주세요.";
-        if (air.pm25 > 75) baseMsg = "오늘 대기질이 꽤 나쁩니다. 가급적 포근한 실내에 머무르시는 걸 강력히 추천해 드려요.";
-        let healthMsg = selectedConditions.length > 0 ? ` 특히 소중한 정보(${selectedConditions.join(', ')})를 고려했을 때, 세심한 건강 관리가 필요합니다.` : "";
-        let aiText = `오늘 ${air.stationName}의 기온은 ${w.temp}°C, 초미세먼지 농도는 ${air.pm25}㎍/㎥입니다. ${baseMsg}${healthMsg} 오늘도 숨결 Pro와 함께 안전하고 기분 좋은 하루 보내시길 바랄게요. 😊`;
+    let baseMsg = "가벼운 산책이나 야외 활동을 즐기기에 완벽하고 상쾌한 날씨예요!";
+    if (air.pm25 > 35) baseMsg = "바깥 공기가 조금 탁하네요. 기관지 보호를 위해 외출하실 때 꼭 마스크를 챙겨주세요.";
+    if (air.pm25 > 75) baseMsg = "오늘 대기질이 꽤 나쁩니다. 가급적 포근한 실내에 머무르시는 걸 강력히 추천해 드려요.";
+    let healthMsg = selectedConditions.length > 0 ? ` 특히 소중한 정보(${selectedConditions.join(', ')})를 고려했을 때, 세심한 건강 관리가 필요합니다.` : "";
+    let aiText = `오늘 ${air.stationName}의 기온은 ${w.temp}°C, 초미세먼지 농도는 ${air.pm25}㎍/㎥입니다. ${baseMsg}${healthMsg} 오늘도 숨결 Pro와 함께 안전하고 기분 좋은 하루 보내시길 바랄게요. 😊`;
 
-        const aiMsgEl = document.getElementById('aiMessage');
-        if(aiMsgEl) {
-            if(activeAiTimer) clearInterval(activeAiTimer);
-            aiMsgEl.innerHTML = '';
-            let aiIndex = 0; const cursor = document.createElement('span'); cursor.className = 'ai-typing'; aiMsgEl.appendChild(cursor);
-            activeAiTimer = setInterval(() => { 
-                if (aiIndex < aiText.length) aiMsgEl.insertBefore(document.createTextNode(aiText[aiIndex++]), cursor); 
-                else { clearInterval(activeAiTimer); if(cursor.parentNode) cursor.remove(); } 
-            }, 35);
-        }
+    const aiMsgEl = document.getElementById('aiMessage');
+    if(aiMsgEl) {
+        if(activeAiTimer) clearInterval(activeAiTimer);
+        aiMsgEl.innerHTML = '';
+        let aiIndex = 0; const cursor = document.createElement('span'); cursor.className = 'ai-typing'; aiMsgEl.appendChild(cursor);
+        activeAiTimer = setInterval(() => { 
+            if (aiIndex < aiText.length) aiMsgEl.insertBefore(document.createTextNode(aiText[aiIndex++]), cursor); 
+            else { clearInterval(activeAiTimer); if(cursor.parentNode) cursor.remove(); } 
+        }, 35);
+    }
 
-        const tipBox = document.getElementById('stealthTipBox');
-        if(tipBox) {
-            let rec = null;
-            if (air.pm25 > 35) rec = SHARE_LINKS.mask;
-            else if (w.ptyCode > 0 || w.rainProb > 50) rec = SHARE_LINKS.umbrella;
-            else if (selectedConditions.includes("천식") || selectedConditions.includes("알레르기")) rec = SHARE_LINKS.pear;
-            else if (selectedConditions.includes("영유아")) rec = SHARE_LINKS.wipes;
-            else if (selectedConditions.includes("운동")) rec = SHARE_LINKS.warmer;
-            else if (air.o3 > 0.09 || w.skyCode === 1) rec = SHARE_LINKS.sunscreen;
+    const tipBox = document.getElementById('stealthTipBox');
+    if(tipBox) {
+        let rec = null;
+        if (air.pm25 > 35) rec = SHARE_LINKS.mask;
+        else if (w.ptyCode > 0 || w.rainProb > 50) rec = SHARE_LINKS.umbrella;
+        else if (selectedConditions.includes("천식") || selectedConditions.includes("알레르기")) rec = SHARE_LINKS.pear;
+        else if (selectedConditions.includes("영유아")) rec = SHARE_LINKS.wipes;
+        else if (selectedConditions.includes("운동")) rec = SHARE_LINKS.warmer;
+        else if (air.o3 > 0.09 || w.skyCode === 1) rec = SHARE_LINKS.sunscreen;
 
-            if (rec) {
-                setTxt('tipText', rec.text);
-                const tipLink = document.getElementById('tipLink');
-                if(tipLink) tipLink.href = rec.url;
-                tipBox.style.display = 'block';
-            } else { tipBox.style.display = 'none'; }
-        }
-    } catch(e) { console.error(e); }
+        if (rec) {
+            setTxt('tipText', rec.text);
+            const tipLink = document.getElementById('tipLink');
+            if(tipLink) tipLink.href = rec.url;
+            tipBox.style.display = 'block';
+        } else { tipBox.style.display = 'none'; }
+    }
 
     const dashboard = document.getElementById('dashboard');
     if(dashboard) dashboard.classList.add('visible');
